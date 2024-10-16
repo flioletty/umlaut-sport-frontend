@@ -1,10 +1,14 @@
 import React from 'react';
 import { Stage, Layer, Line, Text } from 'react-konva';
+import { createDrawing } from '../services/drawing-service';
 
 export default function DrawingBoard() {
     const [tool, setTool] = React.useState('pen');
     const [lines, setLines] = React.useState([]);
+    const [id, setId] = React.useState('');
     const isDrawing = React.useRef(false);
+
+    createDrawing({}).then((id)=>(setId(id)));
   
     const handleMouseDown = (e) => {
       isDrawing.current = true;
