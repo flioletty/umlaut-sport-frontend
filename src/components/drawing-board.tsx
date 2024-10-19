@@ -7,7 +7,7 @@ import { Stage, Layer } from 'react-konva';
 import { Draw } from '../models/draw.dto';
 import { Player } from './player';
 import { Ball } from './ball';
-import { Moving } from '../models/moving.dto';
+import { Moving, Step } from '../models/moving.dto';
 import { Button } from './button';
 import Image from 'next/image';
 import { ButtonWithIcon } from './button-with-icon';
@@ -17,8 +17,8 @@ export function DrawingBoard() {
   const [firstClick, setfirstClick] = React.useState(true);
   
   const [id, setId] = React.useState(0);
-  const [drawings, setDrawings] = React.useState<Moving[]>([]);
-  const [deletedDrawings, setDeletedDrawings] = React.useState<Moving[]>([]);
+  const [drawings, setDrawings] = React.useState<Step[]>([]);
+  const [deletedDrawings, setDeletedDrawings] = React.useState<Step[]>([]);
 
   const player1 = React.useRef( null );
   const player2 = React.useRef( null );
@@ -72,7 +72,7 @@ export function DrawingBoard() {
       if (lastDraw)
         (mapObjects.get(lastDraw.objectName)?.current! as Konva.Node).to({x: lastDraw.x, y: lastDraw.y, duration: 0.1});
     }
-    console.log('2',drawings, deleted)
+    console.log('2', drawings, deleted)
   }
 
   function redo() {
