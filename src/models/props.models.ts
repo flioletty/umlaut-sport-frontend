@@ -8,9 +8,30 @@ export interface DraggableThingProps extends DraggableBallProps {
 
 export interface DraggableBallProps {
     drawings: Moving[];
-    setDrawings: React.Dispatch<React.SetStateAction<Moving[]>>;
+    setDrawings: (React.Dispatch<React.SetStateAction<Moving[]>>);
     x: number;
     y: number;
     id: string;
     innerRef:  React.MutableRefObject<null>;
+    additionFunc?: ()=>void;
+}
+
+export interface ButtonProps {
+    clickHandler: () => void;
+    label: string;
+    color?: ButtonColor;
+}
+
+export type ButtonColor = 'white' | 'orange' | 'grey';
+
+export interface ButtonWithIconProps {
+    handleClick: () => void;
+    iconSrc: string;
+    width: number;
+    height: number;
+    className?: string;
+    alt: string;
+    color?: ButtonColor;
+    disabled?: boolean; 
+    label?: string;
 }

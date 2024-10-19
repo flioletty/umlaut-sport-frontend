@@ -4,7 +4,7 @@ import { DraggableThingProps } from "../models/props.models"
 import React from "react";
 import { Moving } from "../models/moving.dto";
 
-export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, innerRef} : DraggableThingProps) {
+export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, innerRef, additionFunc = () => {}} : DraggableThingProps) {
     
     function findFigureById(figures: any) {
         for(const figure of figures) {
@@ -28,8 +28,8 @@ export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, i
                 const needFigure = findFigureById(figures);
                 if(needFigure) {
                     setDrawings(drawings.concat(needFigure))
+                    additionFunc();
                 }
-                console.log(drawings)
             }} 
         />
     )
