@@ -1,5 +1,5 @@
 import React from "react";
-import { Moving } from "./moving.dto";
+import { Step } from "./moving.dto";
 
 export interface DraggableThingProps extends DraggableBallProps {
     radius: number;
@@ -7,8 +7,8 @@ export interface DraggableThingProps extends DraggableBallProps {
 }
 
 export interface DraggableBallProps {
-    drawings: Moving[];
-    setDrawings: (React.Dispatch<React.SetStateAction<Moving[]>>);
+    drawings: Step[];
+    setDrawings: (React.Dispatch<React.SetStateAction<Step[]>>);
     x: number;
     y: number;
     id: string;

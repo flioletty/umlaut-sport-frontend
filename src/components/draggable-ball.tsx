@@ -2,7 +2,7 @@
 import { Circle } from "react-konva"
 import { DraggableThingProps } from "../models/props.models"
 import React from "react";
-import { Moving, Step } from "../models/moving.dto";
+import { Step } from "../models/moving.dto";
 
 export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, innerRef, additionFunc = () => {}} : DraggableThingProps) {
     
@@ -10,8 +10,8 @@ export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, i
         for(const figure of figures) {
             if(figure.attrs.id === id) {
                 return {
+                        objectName: id,
                         steps : [{
-                            objectName: id,
                             x: figure.attrs.x,
                             y: figure.attrs.y
                         }]
