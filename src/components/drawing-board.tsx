@@ -54,21 +54,19 @@ export function DrawingBoard() {
     var anim = new Konva.Animation(function (frame) {
       const t = frame?.time * timeStep;
       if (1 <= t) {
-        node.x(x[-1]);
-        node.y(y[-1]);
         anim.stop();
         return;
       }
       node.x(besier(x, t))
-      node.y(besier(x, t))
+      node.y(besier(y, t))
     }, layer);
     anim.start();
   }
 
   function applyStepAnimated(step : Step, duration : number, backward : boolean = false) {
     const node = mapObjects.get(step.objectName)?.current! as Konva.Node;
+    const moving = backward ? step.steps[0] : step.steps.at(-1)
     if (step.steps.length <= 2) {
-      const moving = backward ? step.steps[0] : step.steps[-1]
       node.to({x: moving.x, y: moving.y, duration: duration / 1000})
       return;
     }
@@ -76,14 +74,14 @@ export function DrawingBoard() {
   }
 
   function play() {
+    console.log(drawings)
     for(let j = 0; j<6; j++) {
-      applyStepAnimated(drawings[j], 100)
+      applyStepAnimated(drawings[j], 0)
     }
     let i = 6;
     setTimeout(function run() {
       if(i<drawings.length) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-        applyStepAnimated(drawings[i], 600)
+        applyStepAnimated(drawings[i], 2000)
         i++;
       }
       setTimeout(run, 700);
@@ -95,9 +93,7 @@ export function DrawingBoard() {
     if(deleted) {
       setDrawings(drawings);
       setDeletedDrawings(deletedDrawings.concat(deleted));
-      const lastDraw = drawings.findLast((value) => value.objectName === deleted.objectName);
-      if (lastDraw)
-        applyStepAnimated(lastDraw, 300, true)
+      applyStepAnimated(deleted, 300, true)
     }
     console.log('2', drawings, deleted)
   }
@@ -115,13 +111,17 @@ export function DrawingBoard() {
   function start() {
     const str = stage.current?.getStage()?.toJSON();
     const figures = JSON.parse(str ?? '').children[0].children;
-    let res : Moving[] = [];
+    let res : Step[] = [];
     for (const figure of figures) {
       res.push({
         objectName: figure.attrs.id,
-        x: figure.attrs.x,
-        y: figure.attrs.y
-      } as Moving)
+        steps : [
+          {
+            x: figure.attrs.x,
+            y: figure.attrs.y
+          }
+        ] as Moving[]
+      } as Step)
     }
     drawings.length = 0;
     setDrawings(drawings.concat(res));

@@ -35,22 +35,25 @@ export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, i
             draggable
             onDragEnd={(e) => {
                 const position = getPositionFromStage(e.target.getStage())
-                setDrawings(drawings.concat({objectName: id, steps: steps.concat(position)} as Step))
-                setSteps([])
+                setDrawings(drawings.concat({objectName: id, steps: steps} as Step))
                 console.log("Drag end")
                 additionFunc();
             }} 
             onDragMove={useCallback(
                 throttle((e: any) => {
                         const position = getPositionFromStage(e.target.getStage())
-                        setSteps(steps.concat(position))
+                        steps.push(position)
+                        setSteps(steps)
                     }, 
                     100), 
                 [])
             } 
             onDragStart={(e) => {
+                steps.length = 0
+                setSteps(steps)
                 const position = getPositionFromStage(e.target.getStage())
-                setSteps(steps.concat(position))
+                steps.push(position)
+                setSteps(steps)
             }}
         />
     )
