@@ -12,6 +12,7 @@ import { Button } from './button';
 import Image from 'next/image';
 import { ButtonWithIcon } from './button-with-icon';
 import Link from 'next/link';
+import { prepare } from '../utils/bezier';
 
 export function DrawingBoard() {
   const [firstClick, setfirstClick] = React.useState(true);
@@ -38,25 +39,51 @@ export function DrawingBoard() {
     ["ball", ball],
   ])
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: any) => {
     if(firstClick) {
       setfirstClick(false);
       createDrawing(e.target.getStage()?.toJSON()).then((data)=>(setId(data.id)));
     }
   };
 
+  function curvedMoveAnimation(node : Konva.Node, movings : Moving[], duration : number) {
+    const besier = prepare(movings.length);
+    const x = movings.map(_ => _.x)
+    const y = movings.map(_ => _.y)
+    let timeStep = 1 / duration;
+    var anim = new Konva.Animation(function (frame) {
+      const t = frame?.time * timeStep;
+      if (1 <= t) {
+        node.x(x[-1]);
+        node.y(y[-1]);
+        anim.stop();
+        return;
+      }
+      node.x(besier(x, t))
+      node.y(besier(x, t))
+    }, layer);
+    anim.start();
+  }
+
+  function applyStepAnimated(step : Step, duration : number, backward : boolean = false) {
+    const node = mapObjects.get(step.objectName)?.current! as Konva.Node;
+    if (step.steps.length <= 2) {
+      const moving = backward ? step.steps[0] : step.steps[-1]
+      node.to({x: moving.x, y: moving.y, duration: duration / 1000})
+      return;
+    }
+    curvedMoveAnimation(node, backward ? step.steps.reverse() : step.steps, duration)
+  }
+
   function play() {
     for(let j = 0; j<6; j++) {
-      const node = mapObjects.get(drawings[j].objectName)?.current! as Konva.Node;
-      node.to({x: drawings[j].x, y: drawings[j].y, duration: 0.1});
+      applyStepAnimated(drawings[j], 100)
     }
     let i = 6;
     setTimeout(function run() {
       if(i<drawings.length) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-        const node = mapObjects.get(drawings[i].objectName)?.current! as Konva.Node;
-
-        node.to({x: drawings[i].x, y: drawings[i].y, duration: 0.3});
+        applyStepAnimated(drawings[i], 600)
         i++;
       }
       setTimeout(run, 700);
@@ -70,7 +97,7 @@ export function DrawingBoard() {
       setDeletedDrawings(deletedDrawings.concat(deleted));
       const lastDraw = drawings.findLast((value) => value.objectName === deleted.objectName);
       if (lastDraw)
-        (mapObjects.get(lastDraw.objectName)?.current! as Konva.Node).to({x: lastDraw.x, y: lastDraw.y, duration: 0.1});
+        applyStepAnimated(lastDraw, 300, true)
     }
     console.log('2', drawings, deleted)
   }
@@ -80,7 +107,7 @@ export function DrawingBoard() {
     if(returned) {
       setDeletedDrawings(deletedDrawings);
       setDrawings(drawings.concat(returned));
-      (mapObjects.get(returned.objectName)?.current! as Konva.Node).to({x: returned.x, y: returned.y, duration: 0.1});
+      applyStepAnimated(returned, 300)
     }
     console.log('2',drawings, returned)
   }
