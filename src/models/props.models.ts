@@ -35,3 +35,8 @@ export interface ButtonWithIconProps {
     disabled?: boolean; 
     label?: string;
 }
+
+export interface StrategyProps {
+    name: string;
+    id: number;
+}

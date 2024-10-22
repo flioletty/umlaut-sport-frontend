@@ -1,6 +1,6 @@
 "use client"
 
-import { createDrawing, updateDrawing } from '@/src/services/drawing-service';
+import { createDrawing, getDrawingById, updateDrawing } from '@/src/services/drawing-service';
 import Konva from 'konva';
 import React, { useEffect } from 'react';
 import { Stage, Layer } from 'react-konva';
@@ -12,11 +12,10 @@ import { Button } from './button';
 import { ButtonWithIcon } from './button-with-icon';
 import Link from 'next/link';
 import { prepare } from '../utils/bezier';
+import { useRouter } from 'next/compat/router'
+import { useSearchParams } from 'next/navigation';
 
-export function DrawingBoard() {
-  const [firstClick, setfirstClick] = React.useState(true);
-  
-  const [id, setId] = React.useState(0);
+export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
   const [deletedDrawings, setDeletedDrawings] = React.useState<Step[]>([]);
 
@@ -29,7 +28,7 @@ export function DrawingBoard() {
   const layer = React.useRef( null );
   const stage = React.useRef<Konva.Stage>( null );
 
-  const draw = React.useRef<Draw>();
+  const [draw, setDraw] = React.useState<Draw>();
 
   const mapObjects = new Map<string, React.MutableRefObject<null>>([
     ["player1", player1],
@@ -42,11 +41,21 @@ export function DrawingBoard() {
 
   useEffect(()=> {
     async function create() {
-      const a = await createDrawing('aboba')
-      draw.current = a;
+      const id = params.id;
+      console.log('id:',id)
+      if (Number(id)) {
+        const strategy = await getDrawingById(Number(id));
+        setDraw(strategy);
+        if(strategy.data)
+          setDrawings([...strategy.data])
+      } else {
+        console.log('new')
+        // const strategy = await createDrawing('aboba')
+        // setDraw(strategy);
+      }
     }
     create();
-    console.log(draw.current)
+    console.log(draw)
   },[])
 
   function curvedMoveAnimation(node : Konva.Node, movings : Moving[], duration : number) {
@@ -80,8 +89,8 @@ export function DrawingBoard() {
   function play() {
     console.log(drawings)
     for(let j = 0; j<6; j++) {
-      if(draw.current?.start)
-        applyStepAnimated(draw.current?.start[j], 0)
+      if(draw?.start)
+        applyStepAnimated(draw.start[j], 0)
     }
     let i = 0;
     setTimeout(function run() {
@@ -129,13 +138,13 @@ export function DrawingBoard() {
       } as Step)
     }
     const schema = {
-      id: draw.current?.id ?? 0,
-      name: draw.current?.name ?? '',
+      id: draw?.id ?? 0,
+      name: draw?.name ?? '',
       start: res, 
       data: []
     }
     updateDrawing(schema);
-    draw.current = schema;
+    setDraw(schema);
     drawings.length = 0;
     setDrawings(drawings);
     console.log(res, drawings)
@@ -154,11 +163,11 @@ export function DrawingBoard() {
         </Link>
       </div>
       <div className='flex justify-center text-3xl'>
-        Name
+        {draw?.name}
       </div>
       <div className='flex justify-between'>
         <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
-            <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw.current?.start!==undefined}/>
+            <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw?.start!==undefined}/>
             <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
             <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
             <ButtonWithIcon handleClick={() => play()} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
@@ -186,9 +195,9 @@ export function DrawingBoard() {
       </div>
       <div className='flex items-center justify-end'>
         <Button clickHandler={()=>{updateDrawing({
-            id: draw.current?.id ?? 0,
-            name: draw.current?.name ?? '',
-            start: draw.current?.start, 
+            id: draw?.id ?? 0,
+            name: draw?.name ?? '',
+            start: draw?.start, 
             data: [...drawings]
           })}} label='Сохранить' color='orange'/>
         <Button clickHandler={()=>{}} label='Отмена'/>

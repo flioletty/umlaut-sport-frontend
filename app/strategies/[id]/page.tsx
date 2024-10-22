@@ -4,6 +4,6 @@ const Canvas = dynamic(() => import('../../../src/components/drawing-board').the
   ssr: false,
 });
 
-export default function Home() {
-  return <Canvas />;
+export default function Home({ params }: { params: { id: string } }) {
+  return <Canvas params={params}/>;
 }
