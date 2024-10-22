@@ -2,14 +2,13 @@
 
 import { createDrawing, updateDrawing } from '@/src/services/drawing-service';
 import Konva from 'konva';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Stage, Layer } from 'react-konva';
 import { Draw } from '../models/draw.dto';
 import { Player } from './player';
 import { Ball } from './ball';
 import { Moving, Step } from '../models/moving.dto';
 import { Button } from './button';
-import Image from 'next/image';
 import { ButtonWithIcon } from './button-with-icon';
 import Link from 'next/link';
 import { prepare } from '../utils/bezier';
@@ -30,6 +29,8 @@ export function DrawingBoard() {
   const layer = React.useRef( null );
   const stage = React.useRef<Konva.Stage>( null );
 
+  const draw = React.useRef<Draw>();
+
   const mapObjects = new Map<string, React.MutableRefObject<null>>([
     ["player1", player1],
     ["player2", player2],
@@ -39,19 +40,22 @@ export function DrawingBoard() {
     ["ball", ball],
   ])
 
-  const handleMouseMove = (e: any) => {
-    if(firstClick) {
-      setfirstClick(false);
-      createDrawing(e.target.getStage()?.toJSON()).then((data)=>(setId(data.id)));
+  useEffect(()=> {
+    async function create() {
+      const a = await createDrawing('aboba')
+      draw.current = a;
     }
-  };
+    create();
+    console.log(draw.current)
+  },[])
 
   function curvedMoveAnimation(node : Konva.Node, movings : Moving[], duration : number) {
+    console.log(movings)
     const besier = prepare(movings.length);
     const x = movings.map(_ => _.x)
     const y = movings.map(_ => _.y)
-    let timeStep = 1 / duration;
-    var anim = new Konva.Animation(function (frame) {
+    const timeStep = 1 / duration;
+    const anim = new Konva.Animation(function (frame) {
       const t = frame?.time * timeStep;
       if (1 <= t) {
         anim.stop();
@@ -70,22 +74,23 @@ export function DrawingBoard() {
       node.to({x: moving.x, y: moving.y, duration: duration / 1000})
       return;
     }
-    curvedMoveAnimation(node, backward ? step.steps.reverse() : step.steps, duration)
+    curvedMoveAnimation(node, backward ? [...step.steps].reverse() : step.steps, duration)
   }
 
   function play() {
     console.log(drawings)
     for(let j = 0; j<6; j++) {
-      applyStepAnimated(drawings[j], 0)
+      if(draw.current?.start)
+        applyStepAnimated(draw.current?.start[j], 0)
     }
-    let i = 6;
+    let i = 0;
     setTimeout(function run() {
       if(i<drawings.length) {
-        applyStepAnimated(drawings[i], 2000)
+        applyStepAnimated(drawings[i], 1000)
         i++;
       }
-      setTimeout(run, 700);
-    }, 700);      
+      setTimeout(run, 1000);
+    }, 1000);      
   }
 
   function undo() {
@@ -95,23 +100,23 @@ export function DrawingBoard() {
       setDeletedDrawings(deletedDrawings.concat(deleted));
       applyStepAnimated(deleted, 300, true)
     }
-    console.log('2', drawings, deleted)
+    console.log('2', drawings, deletedDrawings)
   }
 
   function redo() {
-    const returned = deletedDrawings.shift()
+    const returned = deletedDrawings.pop()
     if(returned) {
       setDeletedDrawings(deletedDrawings);
       setDrawings(drawings.concat(returned));
       applyStepAnimated(returned, 300)
     }
-    console.log('2',drawings, returned)
+    console.log('2',drawings, deletedDrawings)
   }
 
   function start() {
     const str = stage.current?.getStage()?.toJSON();
     const figures = JSON.parse(str ?? '').children[0].children;
-    let res : Step[] = [];
+    const res : Step[] = [];
     for (const figure of figures) {
       res.push({
         objectName: figure.attrs.id,
@@ -123,8 +128,16 @@ export function DrawingBoard() {
         ] as Moving[]
       } as Step)
     }
+    const schema = {
+      id: draw.current?.id ?? 0,
+      name: draw.current?.name ?? '',
+      start: res, 
+      data: []
+    }
+    updateDrawing(schema);
+    draw.current = schema;
     drawings.length = 0;
-    setDrawings(drawings.concat(res));
+    setDrawings(drawings);
     console.log(res, drawings)
   }
 
@@ -145,8 +158,8 @@ export function DrawingBoard() {
       </div>
       <div className='flex justify-between'>
         <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
-            <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={false}/>
-            <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<7}/>
+            <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw.current?.start!==undefined}/>
+            <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
             <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
             <ButtonWithIcon handleClick={() => play()} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
             <ButtonWithIcon handleClick={() => {}} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
@@ -157,7 +170,6 @@ export function DrawingBoard() {
             style={{ backgroundImage: `url(/background.jpg)`, backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%' }}
             width={window.innerWidth*0.75 - 50}
             height={window.innerHeight*0.73 - 100}
-            onMousemove={handleMouseMove}
             id="container"
             ref={stage}
           >
@@ -173,7 +185,12 @@ export function DrawingBoard() {
         </div>
       </div>
       <div className='flex items-center justify-end'>
-        <Button clickHandler={()=>{updateDrawing({data:drawings, id, name: 'aboba'} as Draw)}} label='Сохранить' color='orange'/>
+        <Button clickHandler={()=>{updateDrawing({
+            id: draw.current?.id ?? 0,
+            name: draw.current?.name ?? '',
+            start: draw.current?.start, 
+            data: [...drawings]
+          })}} label='Сохранить' color='orange'/>
         <Button clickHandler={()=>{}} label='Отмена'/>
       </div>
     </div>

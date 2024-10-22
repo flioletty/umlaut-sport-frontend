@@ -1,27 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Circle } from "react-konva"
 import { DraggableThingProps } from "../models/props.models"
-import React, { useCallback } from "react";
+import React from "react";
 import { Step, Moving } from "../models/moving.dto";
-import throttle from "lodash/throttle";
 
 export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, innerRef, additionFunc = () => {}} : DraggableThingProps) {
     
     const [steps, setSteps] = React.useState<Moving[]>([]);
-
-    function findFigureById(figures: any) {
-        for(const figure of figures) {
-            if(figure.attrs.id === id) {
-                return {
-                        objectName: id,
-                        steps : [{
-                            x: figure.attrs.x,
-                            y: figure.attrs.y
-                        }]
-                    } as Step;
-            }
-        }
-    }
 
     function getPositionFromStage(stage: any) {
         const circle = stage.getLayers()[0].findOne(`#${id}`)
@@ -33,27 +18,23 @@ export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, i
         <Circle x={x} y={y} radius={radius} fill={color} id={id} 
             ref={innerRef}
             draggable
-            onDragEnd={(e) => {
-                const position = getPositionFromStage(e.target.getStage())
-                setDrawings(drawings.concat({objectName: id, steps: steps} as Step))
-                console.log("Drag end")
+            onDragEnd={() => {
+                const step = {objectName: id, steps: [...steps].filter((el, ind)=>ind%8===0)} as Step
+                setDrawings(drawings.concat(step))
+                console.log("Drag end", drawings)
                 additionFunc();
             }} 
-            onDragMove={useCallback(
-                throttle((e: any) => {
+            onDragMove={ (e) => {
                         const position = getPositionFromStage(e.target.getStage())
-                        steps.push(position)
-                        setSteps(steps)
-                    }, 
-                    100), 
-                [])
+                        setSteps(steps.concat(position))
+                        console.log(position, steps)
+                }
             } 
             onDragStart={(e) => {
                 steps.length = 0
                 setSteps(steps)
                 const position = getPositionFromStage(e.target.getStage())
-                steps.push(position)
-                setSteps(steps)
+                setSteps(steps.concat(position))
             }}
         />
     )

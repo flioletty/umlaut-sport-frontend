@@ -1,8 +1,8 @@
-import { Moving } from "./moving.dto";
+import { Step } from "./moving.dto";
 
 export interface Draw {
     id: number;
-    start?: Moving[];
-    data?: Moving[];
+    start?: Step[];
+    data?: Step[];
     name: string;
 }
