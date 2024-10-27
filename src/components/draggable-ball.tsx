@@ -21,13 +21,11 @@ export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, i
             onDragEnd={() => {
                 const step = {objectName: id, steps: [...steps].filter((el, ind)=>ind%8===0)} as Step
                 setDrawings(drawings.concat(step))
-                console.log("Drag end", drawings)
                 additionFunc();
             }} 
             onDragMove={ (e) => {
                         const position = getPositionFromStage(e.target.getStage())
                         setSteps(steps.concat(position))
-                        console.log(position, steps)
                 }
             } 
             onDragStart={(e) => {

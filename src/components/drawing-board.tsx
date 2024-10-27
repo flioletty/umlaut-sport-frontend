@@ -42,24 +42,21 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   useEffect(()=> {
     async function create() {
       const id = params.id;
-      console.log('id:',id)
+      
       if (Number(id)) {
         const strategy = await getDrawingById(Number(id));
         setDraw(strategy);
         if(strategy.data)
           setDrawings([...strategy.data])
       } else {
-        console.log('new')
-        // const strategy = await createDrawing('aboba')
-        // setDraw(strategy);
+        const strategy = await createDrawing('new strategy')
+        setDraw(strategy);
       }
     }
     create();
-    console.log(draw)
   },[])
 
   function curvedMoveAnimation(node : Konva.Node, movings : Moving[], duration : number) {
-    console.log(movings)
     const besier = prepare(movings.length);
     const x = movings.map(_ => _.x)
     const y = movings.map(_ => _.y)
@@ -87,7 +84,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   }
 
   function play() {
-    console.log(drawings)
     for(let j = 0; j<6; j++) {
       if(draw?.start)
         applyStepAnimated(draw.start[j], 0)
@@ -109,7 +105,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       setDeletedDrawings(deletedDrawings.concat(deleted));
       applyStepAnimated(deleted, 300, true)
     }
-    console.log('2', drawings, deletedDrawings)
+    console.log(draw)
   }
 
   function redo() {
@@ -119,7 +115,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       setDrawings(drawings.concat(returned));
       applyStepAnimated(returned, 300)
     }
-    console.log('2',drawings, deletedDrawings)
   }
 
   function start() {
@@ -147,7 +142,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     setDraw(schema);
     drawings.length = 0;
     setDrawings(drawings);
-    console.log(res, drawings)
   }
 
   function clearDeleted() {
@@ -163,11 +157,14 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         </Link>
       </div>
       <div className='flex justify-center text-3xl'>
-        {draw?.name}
+        <input className='bg-black' maxLength={20} minLength={3}
+          value={draw?.name} 
+          onChange={e => setDraw({...draw, id: draw?.id ?? 0, name: e.target.value})} 
+        />
       </div>
       <div className='flex justify-between'>
         <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
-            <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw?.start!==undefined}/>
+            <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw?.start!==null}/>
             <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
             <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
             <ButtonWithIcon handleClick={() => play()} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
@@ -183,12 +180,12 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             ref={stage}
           >
             <Layer ref={layer}>
-              <Player innerRef={player1} id={'player1'} x={90} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              <Player innerRef={player2} id={'player2'} x={200} y={300} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              <Player innerRef={player3} id={'player3'} x={408} y={370} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              <Player innerRef={player4} id={'player4'} x={616} y={300} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              <Player innerRef={player5} id={'player5'} x={726} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              <Ball innerRef={ball} id={'ball'} x={90} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              <Player innerRef={player1} id={'player1'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              <Player innerRef={player2} id={'player2'} x={320} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              <Player innerRef={player3} id={'player3'} x={615} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
             </Layer>
           </Stage>
         </div>

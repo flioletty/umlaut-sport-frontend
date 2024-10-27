@@ -3,29 +3,29 @@ import { Draw } from "../models/draw.dto";
 const backendUrl = 'http://83.166.236.130:8000/api/v1/'
 
 export function createDrawing(name: string) {
-    // return fetch(backendUrl + 'draw', {
-    //     method: 'POST',
-    //     mode: 'cors',
-    //     headers: {
-    //       'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify({name: name})
-    // })
-    // .then((result)=>result.json())
-    // .then((json)=>{
-    //   return {
-    //     name: json.name,
-    //     id: json.id,
-    //     data: json.data,
-    //     start: json.start
-    //   } as Draw;
-    // });
-    return {
-          name: 'json.name',
-          id: 1,
-          data: [],
-          start: []
-        } as Draw;
+    return fetch(backendUrl + 'draw', {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({name: name})
+    })
+    .then((result)=>result.json())
+    .then((json)=>{
+      return {
+        name: json.name,
+        id: json.id,
+        data: json.data,
+        start: json.start
+      } as Draw;
+    });
+    // return {
+    //       name: 'json.name',
+    //       id: 1,
+    //       data: [],
+    //       start: []
+    //     } as Draw;
 }
 
 
@@ -72,12 +72,10 @@ export function getAllDrawing() {
         },
     }).then((result)=>result.json()
     .then((json)=>{
-      console.log(json)
       for(let draw of json) {
         draw.start = JSON.parse(draw.start);
         draw.data = JSON.parse(draw.data);
       }
-      console.log(json)
       return json as Draw[];
     })
   );

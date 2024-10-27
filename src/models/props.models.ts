@@ -40,3 +40,22 @@ export interface StrategyProps {
     name: string;
     id: number;
 }
+
+export interface LineProps {
+    color?: ButtonColor;
+}
+
+export interface LineInputProps {
+    color?: ButtonColor;
+    label: string;
+    onChange: React.Dispatch<React.SetStateAction<string>>;
+    value: string;
+}
+
+export interface LineSelectProps {
+    color?: ButtonColor;
+    label: string;
+    options: string[];
+    onChange: React.Dispatch<React.SetStateAction<string>>;
+    value: string;
+}
