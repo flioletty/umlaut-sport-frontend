@@ -42,7 +42,7 @@ export default function About() {
             
           </Link>
           <div onClick={onOpen} className="w-40 h-52 text-orange-500 text-5xl bg-stone-800 flex flex-col justify-center items-center rounded m-6">
-            <div className="w-4/5 h-3/4 bg-white flex flex-col justify-center items-center">+</div>
+            <div className="w-4/5 h-3/4 flex flex-col justify-center items-center">+</div>
           </div>
         </div>
         <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
