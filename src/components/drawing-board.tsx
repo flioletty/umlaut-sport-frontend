@@ -1,6 +1,6 @@
 "use client"
 
-import { createDrawing, getDrawingById, updateDrawing } from '@/src/services/drawing-service';
+import { getDrawingById, updateDrawing } from '@/src/services/drawing-service';
 import Konva from 'konva';
 import React, { useEffect } from 'react';
 import { Stage, Layer } from 'react-konva';
@@ -13,7 +13,6 @@ import { ButtonWithIcon } from './button-with-icon';
 import Link from 'next/link';
 import { prepare } from '../utils/bezier';
 import Image from 'next/image';
-import useImage from 'use-image';
 import { Opponent } from './opponent';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
@@ -33,9 +32,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const ball = React.useRef( null );
   const layer = React.useRef( null );
   const stage = React.useRef<Konva.Stage>( null );
-
-  const dragUrl = React.useRef<string>('');
-  const stageRef = React.useRef();
+  
   const [opponentsCoord, setOpponentsCoord] = React.useState<Moving[]>([]);
 
   const [draw, setDraw] = React.useState<Draw>();
@@ -57,14 +54,19 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   useEffect(()=> {
     async function create() {
       const id = params.id;
-      
       if (Number(id)) {
         const strategy = await getDrawingById(Number(id));
         setDraw(strategy);
         if(strategy.data)
           setDrawings([...strategy.data])
-      } else {
-        console.log('huy')
+        if(strategy.start) {
+          strategy.start.forEach((val)=>{
+            if(val.objectName.startsWith('opponent')) {
+              opponentsCoord[Number(val.objectName.at(-1))-1] = {x: val.steps.at(-1)?.x, y: val.steps.at(-1)?.y} as Moving;
+              setOpponentsCoord(opponentsCoord)
+            }
+          });
+        }
       }
     }
     create();
@@ -91,6 +93,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     const node = mapObjects.get(step.objectName)?.current! as Konva.Node;
     const moving = backward ? step.steps[0] : step.steps.at(-1)
     if (step.steps.length <= 2) {
+      console.log(node, step.objectName)
       node.to({x: moving.x, y: moving.y, duration: duration / 1000})
       return;
     }
@@ -98,9 +101,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   }
 
   function play() {
-    for(let j = 0; j<6; j++) {
-      if(draw?.start)
+    if(draw?.start){
+      for(let j = 0; j<draw.start.length; j++) {
         applyStepAnimated(draw.start[j], 0)
+      }
     }
     let i = 0;
     setTimeout(function run() {
@@ -163,6 +167,28 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     setDeletedDrawings(deletedDrawings);
   }
 
+  const opponents = opponentsCoord.map((coord, ind) => {
+      if(opponentsCoord.length <= 5){
+        console.log('1', opponent1, mapObjects.get(`opponent${ind+1}`), ind)
+        const opponent = drawings.findLast((val)=>val.objectName === `opponent${ind+1}`);
+        if(opponent){
+          coord.x = opponent.steps.at(-1)?.x ?? opponentsCoord[ind].x;
+          coord.y = opponent.steps.at(-1)?.y ?? opponentsCoord[ind].y;
+        }
+        return (
+          <Opponent 
+            innerRef={mapObjects.get(`opponent${ind+1}`) ?? null} 
+            id={`opponent${ind+1}`} 
+            key={`opponent${ind+1}`} 
+            x={coord.x} 
+            y={coord.y} 
+            drawings={drawings} 
+            setDrawings={setDrawings} 
+            additionFunc={()=>clearDeleted()}/>
+        )
+      }
+    })
+
   return (
     <div className='p-8'>
       <div>
@@ -179,10 +205,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       <div className='flex justify-between'>
         <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
             <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw?.start!==null}/>
-            <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true} 
-              onDragStart={(e) => {
-                dragUrl.current = '/opponent.svg';
-              }}/>
+            <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true}/>
             <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
             <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
             <ButtonWithIcon handleClick={() => play()} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
@@ -192,15 +215,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           onDrop={(e) => {
             e.preventDefault();
             stage.current?.setPointersPositions(e);
-            console.log(stage.current?.getPointerPosition())
-            setOpponentsCoord(
-              opponentsCoord.concat([
-                {
-                  x: stage.current?.getPointerPosition()?.x,
-                  y: stage.current?.getPointerPosition()?.y,
-                } as Moving,
-              ])
-            );
+            const pos = {
+              x: stage.current?.getPointerPosition()?.x,
+              y: stage.current?.getPointerPosition()?.y,
+            } as Moving;
+            setOpponentsCoord(opponentsCoord.concat([{x: pos.x-50, y: pos.y-30} as Moving]));
           }}
           onDragOver={(e) => e.preventDefault()}
         >
@@ -218,22 +237,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               <Player innerRef={player3} id={'player3'} x={615} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
               <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
               <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              {opponents}
               <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              {opponentsCoord.map((coord) => {
-                if(opponentsCoord.length <= 5){
-                  return (
-                    <Opponent 
-                      innerRef={mapObjects.get(`opponent${opponentsCoord.length}`) ?? null} 
-                      id={`opponent${opponentsCoord.length}`} 
-                      key={`opponent${opponentsCoord.length}`} 
-                      x={coord.x} 
-                      y={coord.y} 
-                      drawings={drawings} 
-                      setDrawings={setDrawings} 
-                      additionFunc={()=>clearDeleted()}/>
-                  )
-                }
-              })}
             </Layer>
           </Stage>
         </div>

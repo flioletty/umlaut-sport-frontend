@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Circle, Image } from "react-konva"
+import { Image } from "react-konva"
 import { DraggableThingProps } from "../models/props.models"
 import React from "react";
 import { Step, Moving } from "../models/moving.dto";
@@ -25,6 +25,7 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
             onDragEnd={() => {
                 const step = {objectName: id, steps: [...steps].filter((el, ind)=>ind%8===0)} as Step
                 setDrawings(drawings.concat(step))
+                console.log(drawings)
                 additionFunc();
             }} 
             onDragMove={ (e) => {
