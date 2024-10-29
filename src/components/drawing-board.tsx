@@ -12,8 +12,9 @@ import { Button } from './button';
 import { ButtonWithIcon } from './button-with-icon';
 import Link from 'next/link';
 import { prepare } from '../utils/bezier';
-import { useRouter } from 'next/compat/router'
-import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import useImage from 'use-image';
+import { Opponent } from './opponent';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -24,9 +25,18 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const player3 = React.useRef( null );
   const player4 = React.useRef( null );
   const player5 = React.useRef( null );
+  const opponent1 = React.useRef( null );
+  const opponent2 = React.useRef( null );
+  const opponent3 = React.useRef( null );
+  const opponent4 = React.useRef( null );
+  const opponent5 = React.useRef( null );
   const ball = React.useRef( null );
   const layer = React.useRef( null );
   const stage = React.useRef<Konva.Stage>( null );
+
+  const dragUrl = React.useRef<string>('');
+  const stageRef = React.useRef();
+  const [opponentsCoord, setOpponentsCoord] = React.useState<Moving[]>([]);
 
   const [draw, setDraw] = React.useState<Draw>();
 
@@ -36,6 +46,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     ["player3", player3],
     ["player4", player4],
     ["player5", player5],
+    ["opponent1", opponent1],
+    ["opponent2", opponent2],
+    ["opponent3", opponent3],
+    ["opponent4", opponent4],
+    ["opponent5", opponent5],
     ["ball", ball],
   ])
 
@@ -49,8 +64,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         if(strategy.data)
           setDrawings([...strategy.data])
       } else {
-        const strategy = await createDrawing('new strategy')
-        setDraw(strategy);
+        console.log('huy')
       }
     }
     create();
@@ -150,7 +164,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className='m-8 p-8'>
+    <div className='p-8'>
       <div>
         <Link href={{pathname: '/strategies'}}>
           <ButtonWithIcon handleClick={() => {}} color='grey' iconSrc='/back.svg' alt='back' width={40} height={40} className='m-2' label='К стратегиям'/>
@@ -158,19 +172,38 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       </div>
       <div className='flex justify-center text-3xl'>
         <input className='bg-black' maxLength={20} minLength={3}
-          value={draw?.name} 
+          value={draw?.name ?? ''} 
           onChange={e => setDraw({...draw, id: draw?.id ?? 0, name: e.target.value})} 
         />
       </div>
       <div className='flex justify-between'>
         <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
             <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw?.start!==null}/>
+            <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true} 
+              onDragStart={(e) => {
+                dragUrl.current = '/opponent.svg';
+              }}/>
             <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
             <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
             <ButtonWithIcon handleClick={() => play()} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
             <ButtonWithIcon handleClick={() => {}} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
         </div>
-        <div className='m-6 mx-10'>
+        <div className='m-6 mx-10'
+          onDrop={(e) => {
+            e.preventDefault();
+            stage.current?.setPointersPositions(e);
+            console.log(stage.current?.getPointerPosition())
+            setOpponentsCoord(
+              opponentsCoord.concat([
+                {
+                  x: stage.current?.getPointerPosition()?.x,
+                  y: stage.current?.getPointerPosition()?.y,
+                } as Moving,
+              ])
+            );
+          }}
+          onDragOver={(e) => e.preventDefault()}
+        >
           <Stage
             className='border-black border-2 '
             style={{ backgroundImage: `url(/background.jpg)`, backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%' }}
@@ -186,6 +219,21 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
               <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
               <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              {opponentsCoord.map((coord) => {
+                if(opponentsCoord.length <= 5){
+                  return (
+                    <Opponent 
+                      innerRef={mapObjects.get(`opponent${opponentsCoord.length}`) ?? null} 
+                      id={`opponent${opponentsCoord.length}`} 
+                      key={`opponent${opponentsCoord.length}`} 
+                      x={coord.x} 
+                      y={coord.y} 
+                      drawings={drawings} 
+                      setDrawings={setDrawings} 
+                      additionFunc={()=>clearDeleted()}/>
+                  )
+                }
+              })}
             </Layer>
           </Stage>
         </div>

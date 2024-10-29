@@ -11,7 +11,7 @@ export function ButtonWithIcon({iconSrc, handleClick, width, height, className, 
     return (
         <button className={'rounded-lg disabled:opacity-50 ' + (disabled ? '' : colorMap.get(color))} onClick={handleClick} disabled={disabled}>
             <div className={'flex items-center text-lg ' + className}>
-                <Image src={iconSrc} alt={alt} width={width} height={height}/>
+                <Image src={iconSrc} alt={alt} width={width} height={height} draggable={false}/>
                 {label}
             </div>
         </button>

@@ -10,7 +10,15 @@ export function LineInput({label, color='white', onChange, value}: LineInputProp
     return (
         <div>
             <span className={'border-none mr-3 ' + colorMap.get(color)}>{label}:</span>
-            <input value={value} onChange={(e)=>onChange(e.target.value)} className={"bg-transparent border-b-2 focus:outline-none " + colorMap.get(color)}></input>
+            <input 
+                value={value} 
+                required 
+                minLength={3} 
+                maxLength={30} 
+                onChange={(e)=>onChange(e.target.value)} 
+                className={"bg-transparent border-b-2 focus:outline-none invalid:border-b-red-600 " + colorMap.get(color)}
+                >
+            </input>
         </div>
     )
 }

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Circle } from "react-konva"
+import { Circle, Image } from "react-konva"
 import { DraggableThingProps } from "../models/props.models"
 import React from "react";
 import { Step, Moving } from "../models/moving.dto";
+import useImage from "use-image";
 
-export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, innerRef, additionFunc = () => {}} : DraggableThingProps) {
+export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, additionFunc = () => {}} : DraggableThingProps) {
     
     const [steps, setSteps] = React.useState<Moving[]>([]);
 
@@ -14,8 +15,11 @@ export function DraggableBall({drawings, setDrawings, x, y, radius, color, id, i
 
     }
 
+    const [image] = useImage(src);
+
     return(
-        <Circle x={x} y={y} radius={radius} fill={color} id={id} 
+        <Image x={x} y={y} id={id} alt='player'
+            image={image}
             ref={innerRef}
             draggable
             onDragEnd={() => {

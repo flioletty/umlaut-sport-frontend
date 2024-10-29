@@ -1,6 +1,6 @@
 import { ButtonColor, ButtonProps } from "../models/props.models";
 
-export function Button({clickHandler, label, color = 'grey'}:ButtonProps) {
+export function Button({clickHandler, label, color = 'grey', disabled = false}:ButtonProps) {
 
     const colorMap = new Map<ButtonColor, string>([
         ['white', 'bg-stone-100 hover:bg-stone-200 active:bg-stone-400'],
@@ -11,7 +11,8 @@ export function Button({clickHandler, label, color = 'grey'}:ButtonProps) {
     return (
         <button 
             onClick={clickHandler} 
-            className={'min-w-32 my-1.5 m-1 p-1 rounded-md ' + (colorMap.get(color))}
+            className={'min-w-32 my-1.5 m-1 p-1 rounded-md disabled:opacity-50 ' + (colorMap.get(color))}
+            disabled={disabled}
             >
                 {label}
         </button>

@@ -2,10 +2,10 @@ import React from "react";
 import { DraggableBallProps, DraggableThingProps } from "../models/props.models"
 import { DraggableBall } from "./draggable-ball";
 
-export function Player(props : DraggableBallProps) {
+export function Opponent(props : DraggableBallProps) {
     const draggableThingProps = {
         ...props,
-        src: '/player.svg',
+        src: '/opponent.svg',
     } as DraggableThingProps
 
     return(

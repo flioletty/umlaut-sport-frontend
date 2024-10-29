@@ -2,8 +2,7 @@ import React from "react";
 import { Step } from "./moving.dto";
 
 export interface DraggableThingProps extends DraggableBallProps {
-    radius: number;
-    color: string;
+    src: string;
 }
 
 export interface DraggableBallProps {
@@ -12,7 +11,7 @@ export interface DraggableBallProps {
     x: number;
     y: number;
     id: string;
-    innerRef:  React.MutableRefObject<null>;
+    innerRef:  React.MutableRefObject<null> | null;
     additionFunc?: ()=>void;
 }
 
@@ -20,6 +19,7 @@ export interface ButtonProps {
     clickHandler: () => void;
     label: string;
     color?: ButtonColor;
+    disabled?: boolean;
 }
 
 export type ButtonColor = 'white' | 'orange' | 'grey';

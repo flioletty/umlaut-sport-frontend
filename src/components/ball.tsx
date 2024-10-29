@@ -4,8 +4,7 @@ import { DraggableBall } from "./draggable-ball";
 export function Ball(props : DraggableBallProps) {
     const draggableThingProps = {
         ...props,
-        color: "orange",
-        radius: 15,
+        src: '/ball.svg'
     } as DraggableThingProps
 
     return(
