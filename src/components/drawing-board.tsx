@@ -20,7 +20,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const [drawings, setDrawings] = React.useState<Step[]>([]);
   const [deletedDrawings, setDeletedDrawings] = React.useState<Step[]>([]);
 
-  const player1 = React.useRef( null );
+  const player1 = React.useRef<Konva.Group>( null );
   const player2 = React.useRef( null );
   const player3 = React.useRef( null );
   const player4 = React.useRef( null );
@@ -188,7 +188,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             drawings={drawings} 
             setDrawings={setDrawings} 
             additionFunc={()=>clearDeleted()}
-            disabled={draw?.start!==null}/>
+            disabled={draw?.start!==null}
+            ballRef={ball}/>
         )
       }
     })
@@ -236,13 +237,13 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             ref={stage}
           >
             <Layer ref={layer}>
-              <Player innerRef={player1} id={'player1'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
-              <Player innerRef={player2} id={'player2'} x={320} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
-              <Player innerRef={player3} id={'player3'} x={615} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
-              <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
-              <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
+              <Player innerRef={player1} id={'player1'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
+              <Player innerRef={player2} id={'player2'} x={320} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
+              <Player innerRef={player3} id={'player3'} x={615} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
+              <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
+              <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
               {opponents}
-              <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true}/>
+              <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true} ballRef={null}/>
             </Layer>
           </Stage>
         </div>

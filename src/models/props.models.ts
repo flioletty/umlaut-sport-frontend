@@ -1,5 +1,6 @@
 import React from "react";
 import { Step } from "./moving.dto";
+import Konva from "konva";
 
 export interface DraggableThingProps extends DraggableBallProps {
     src: string;
@@ -11,10 +12,11 @@ export interface DraggableBallProps {
     x: number;
     y: number;
     id: string;
-    innerRef:  React.MutableRefObject<null> | null;
+    innerRef:  React.MutableRefObject<Konva.Group> | null;
     additionFunc?: ()=>void;
     disabled?: boolean;
     name?: string;
+    ballRef: React.MutableRefObject<Konva.Group> | null;
 }
 
 export interface ButtonProps {
@@ -60,4 +62,8 @@ export interface LineSelectProps {
     options: string[];
     onChange: React.Dispatch<React.SetStateAction<string>>;
     value: string;
+}
+
+export interface BallProps extends DraggableBallProps {
+    src: string;
 }
