@@ -6,4 +6,5 @@ export interface Moving {
 export interface Step {
     objectName: string;
     steps: Moving[];
+    label: string;
 }

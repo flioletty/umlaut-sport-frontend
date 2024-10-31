@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { prepare } from '../utils/bezier';
 import Image from 'next/image';
 import { Opponent } from './opponent';
+import { StartLabels } from '../models/start-labels';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -58,13 +59,14 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         const strategy = await getDrawingById(Number(id));
         setDraw(strategy);
         if(strategy.data)
-          setDrawings([...strategy.data])
+          setDrawings([...strategy.data]);
         if(strategy.start) {
           strategy.start.forEach((val)=>{
             if(val.objectName.startsWith('opponent')) {
               opponentsCoord[Number(val.objectName.at(-1))-1] = {x: val.steps.at(-1)?.x, y: val.steps.at(-1)?.y} as Moving;
-              setOpponentsCoord(opponentsCoord)
+              setOpponentsCoord(opponentsCoord);
             }
+            StartLabels.set(val.objectName, val.label);
           });
         }
       }
@@ -141,6 +143,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     const res : Step[] = [];
     for (const figure of figures) {
       res.push({
+        label: figure.attrs.name,
         objectName: figure.attrs.id,
         steps : [
           {
@@ -184,7 +187,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             y={coord.y} 
             drawings={drawings} 
             setDrawings={setDrawings} 
-            additionFunc={()=>clearDeleted()}/>
+            additionFunc={()=>clearDeleted()}
+            disabled={draw?.start!==null}/>
         )
       }
     })
@@ -232,13 +236,13 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             ref={stage}
           >
             <Layer ref={layer}>
-              <Player innerRef={player1} id={'player1'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              <Player innerRef={player2} id={'player2'} x={320} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              <Player innerRef={player3} id={'player3'} x={615} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
-              <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              <Player innerRef={player1} id={'player1'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
+              <Player innerRef={player2} id={'player2'} x={320} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
+              <Player innerRef={player3} id={'player3'} x={615} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
+              <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
+              <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null}/>
               {opponents}
-              <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()}/>
+              <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true}/>
             </Layer>
           </Stage>
         </div>

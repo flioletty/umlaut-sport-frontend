@@ -13,6 +13,8 @@ export interface DraggableBallProps {
     id: string;
     innerRef:  React.MutableRefObject<null> | null;
     additionFunc?: ()=>void;
+    disabled?: boolean;
+    name?: string;
 }
 
 export interface ButtonProps {
