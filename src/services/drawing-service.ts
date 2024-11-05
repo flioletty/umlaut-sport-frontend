@@ -1,31 +1,20 @@
 import { Draw } from "../models/draw.dto";
 
-const backendUrl = 'http://83.166.236.130:8000/api/v1/'
+export const backendUrl = 'http://83.166.236.130:8000/api/v1/'
 
-export function createDrawing(name: string) {
+export function createDrawing(name: string, folderId: number) {
     return fetch(backendUrl + 'draw', {
         method: 'POST',
         mode: 'cors',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({name: name})
+        body: JSON.stringify({name: name, folder_id: folderId, area: 'full'})
     })
     .then((result)=>result.json())
     .then((json)=>{
-      return {
-        name: json.name,
-        id: json.id,
-        data: json.data,
-        start: json.start
-      } as Draw;
+      return json as Draw;
     });
-    // return {
-    //       name: 'json.name',
-    //       id: 1,
-    //       data: [],
-    //       start: []
-    //     } as Draw;
 }
 
 
@@ -36,11 +25,7 @@ export function updateDrawing(data: Draw) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...data, 
-          data: JSON.stringify(data.data), 
-          start: JSON.stringify(data.start), 
-        })
+        body: JSON.stringify(data)
     });
 }
 
@@ -54,12 +39,7 @@ export function getDrawingById(id: number) {
       })
       .then((result)=>result.json())
       .then((json)=>{
-        return {
-          name: json.name,
-          id: json.id,
-          data: JSON.parse(json.data),
-          start: JSON.parse(json.start),
-        } as Draw;
+        return json as Draw;
       });
 }
 
@@ -72,10 +52,6 @@ export function getAllDrawing() {
         },
     }).then((result)=>result.json()
     .then((json)=>{
-      for(let draw of json) {
-        draw.start = JSON.parse(draw.start);
-        draw.data = JSON.parse(draw.data);
-      }
       return json as Draw[];
     })
   );

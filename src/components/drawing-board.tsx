@@ -15,6 +15,7 @@ import { prepare } from '../utils/bezier';
 import Image from 'next/image';
 import { Opponent } from './opponent';
 import { StartLabels } from '../models/start-labels';
+import { comma } from 'postcss/lib/list';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -60,6 +61,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         setDraw(strategy);
         if(strategy.data)
           setDrawings([...strategy.data]);
+        console.log(strategy)
         if(strategy.start) {
           strategy.start.forEach((val)=>{
             if(val.objectName.startsWith('opponent')) {
@@ -72,6 +74,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       }
     }
     create();
+    
   },[])
 
   function curvedMoveAnimation(node : Konva.Node, movings : Moving[], duration : number) {
@@ -92,10 +95,16 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   }
 
   function applyStepAnimated(step : Step, duration : number, backward : boolean = false) {
+    if(step.hasBall) {
+      mapObjects.get('ball')?.current!._setAttr('x', 0);
+      mapObjects.get('ball')?.current!._setAttr('y', 0);
+      (mapObjects.get(step.objectName)?.current! as Konva.Group).add(mapObjects.get('ball')?.current! as Konva.Node)
+    } else {
+      (mapObjects.get(step.objectName)?.current! as Konva.Group).children.length=2;
+    }
     const node = mapObjects.get(step.objectName)?.current! as Konva.Node;
     const moving = backward ? step.steps[0] : step.steps.at(-1)
     if (step.steps.length <= 2) {
-      console.log(node, step.objectName)
       node.to({x: moving.x, y: moving.y, duration: duration / 1000})
       return;
     }
@@ -125,7 +134,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       setDeletedDrawings(deletedDrawings.concat(deleted));
       applyStepAnimated(deleted, 300, true)
     }
-    console.log(draw)
   }
 
   function redo() {
@@ -157,7 +165,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       id: draw?.id ?? 0,
       name: draw?.name ?? '',
       start: res, 
-      data: []
+      data: [],
+      area: draw?.area ?? '',
+      folder_id: draw?.folder_id ?? 1,
+      comment: draw?.comment ?? '',
     }
     updateDrawing(schema);
     setDraw(schema);
@@ -172,7 +183,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
 
   const opponents = opponentsCoord.map((coord, ind) => {
       if(opponentsCoord.length <= 5){
-        console.log('1', opponent1, mapObjects.get(`opponent${ind+1}`), ind)
         const opponent = drawings.findLast((val)=>val.objectName === `opponent${ind+1}`);
         if(opponent){
           coord.x = opponent.steps.at(-1)?.x ?? opponentsCoord[ind].x;
@@ -210,7 +220,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       <div className='flex justify-between'>
         <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
             <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw?.start!==null}/>
-            <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true}/>
+            <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={draw?.start===null}/>
             <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
             <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
             <ButtonWithIcon handleClick={() => play()} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
@@ -253,7 +263,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             id: draw?.id ?? 0,
             name: draw?.name ?? '',
             start: draw?.start, 
-            data: [...drawings]
+            data: [...drawings],
+            area: draw?.area ?? '',
+            folder_id: draw?.folder_id ?? 1,
+            comment: draw?.comment ?? ''
           })}} label='Сохранить' color='orange'/>
         <Button clickHandler={()=>{}} label='Отмена'/>
       </div>

@@ -5,7 +5,7 @@ import { DraggableBall } from "./draggable-ball";
 export function Opponent(props : DraggableBallProps) {
     const draggableThingProps = {
         ...props,
-        src: '/opponent.svg',
+        src: '/opponent-circle.svg',
     } as DraggableThingProps
 
     return(

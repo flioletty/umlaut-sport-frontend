@@ -1,6 +1,6 @@
 import { LineProps, ButtonColor } from "../models/props.models"
 
-export function Line({color = 'white'}: LineProps) {
+export function Line({color = 'white', block = true}: LineProps) {
     const colorMap = new Map<ButtonColor, string>([
         ['white', 'border-t-stone-100'],
         ['orange', 'border-t-orange-400'],
@@ -8,6 +8,6 @@ export function Line({color = 'white'}: LineProps) {
     ]) 
 
     return (
-        <hr className={"block h-px colorMap border-t-2 mt-1 " + colorMap.get(color)}/>
+        <hr className={"h-px colorMap border-t-2 mt-1 w-full " + colorMap.get(color) + (block ? ' block' : '')}/>
     )
 }

@@ -5,4 +5,7 @@ export interface Draw {
     start?: Step[];
     data?: Step[];
     name: string;
+    folder_id: number;
+    comment: string;
+    area: string;
 }

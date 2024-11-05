@@ -11,7 +11,7 @@ export function LineSelect({label, color='white', options, onChange, value}: Lin
         <div>
             <span className={'border-none mr-3 ' + colorMap.get(color)}>{label}:</span>
             <select value={value} onChange={(e)=>onChange(e.target.value)} className={"bg-transparent border-b-2 focus:outline-none " + colorMap.get(color)}>
-                {options.map((val)=>(<option key={val}>{val}</option>))}
+                {options.map((val)=>(<option value={val.id} key={val.id}>{val.name}</option>))}
             </select>
         </div>
     )

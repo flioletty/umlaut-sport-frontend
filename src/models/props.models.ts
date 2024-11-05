@@ -16,7 +16,7 @@ export interface DraggableBallProps {
     additionFunc?: ()=>void;
     disabled?: boolean;
     name?: string;
-    ballRef: React.MutableRefObject<Konva.Group> | null;
+    ballRef: React.MutableRefObject<Konva.Node> | null;
 }
 
 export interface ButtonProps {
@@ -47,6 +47,7 @@ export interface StrategyProps {
 
 export interface LineProps {
     color?: ButtonColor;
+    block?: boolean;
 }
 
 export interface LineInputProps {
@@ -56,12 +57,16 @@ export interface LineInputProps {
     value: string;
 }
 
+export interface OptionModel {
+    name: string;
+    id: number;
+}
 export interface LineSelectProps {
     color?: ButtonColor;
     label: string;
-    options: string[];
-    onChange: React.Dispatch<React.SetStateAction<string>>;
-    value: string;
+    options: OptionModel[];
+    onChange: React.Dispatch<React.SetStateAction<number>>;
+    value: number;
 }
 
 export interface BallProps extends DraggableBallProps {
