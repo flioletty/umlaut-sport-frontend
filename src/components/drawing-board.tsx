@@ -2,7 +2,7 @@
 
 import { getDrawingById, updateDrawing } from '@/src/services/drawing-service';
 import Konva from 'konva';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stage, Layer } from 'react-konva';
 import { Draw } from '../models/draw.dto';
 import { Player } from './player';
@@ -15,13 +15,14 @@ import { prepare } from '../utils/bezier';
 import Image from 'next/image';
 import { Opponent } from './opponent';
 import { StartLabels } from '../models/start-labels';
-import { comma } from 'postcss/lib/list';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
   const [deletedDrawings, setDeletedDrawings] = React.useState<Step[]>([]);
+  const [drawBlock, setDrawBlock] = useState<boolean>(false);
+  const areaLink = React.useRef('/half-background-rotated-cropped-rotated.svg')
 
-  const player1 = React.useRef<Konva.Group>( null );
+  const player1 = React.useRef( null );
   const player2 = React.useRef( null );
   const player3 = React.useRef( null );
   const player4 = React.useRef( null );
@@ -61,7 +62,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         setDraw(strategy);
         if(strategy.data)
           setDrawings([...strategy.data]);
-        console.log(strategy)
         if(strategy.start) {
           strategy.start.forEach((val)=>{
             if(val.objectName.startsWith('opponent')) {
@@ -70,6 +70,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             }
             StartLabels.set(val.objectName, val.label);
           });
+        }
+        console.log(strategy)
+        if(strategy.area === 'full') {
+          areaLink.current = '/half-background-rotated.svg'
         }
       }
     }
@@ -99,13 +103,34 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       mapObjects.get('ball')?.current!._setAttr('x', 0);
       mapObjects.get('ball')?.current!._setAttr('y', 0);
       (mapObjects.get(step.objectName)?.current! as Konva.Group).add(mapObjects.get('ball')?.current! as Konva.Node)
-    } else {
-      (mapObjects.get(step.objectName)?.current! as Konva.Group).children.length=2;
+    }else{
+      if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[4] instanceof Konva.Group) {
+        (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(4, 1);
+      }
+      else if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[3] instanceof Konva.Group) {
+          (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(3, 1);
+      }
     }
+
+    if(step.hasBlock) {
+      Konva.Image.fromURL('/player-block.svg', (image) => {
+          (mapObjects.get(step.objectName)?.current! as Konva.Group).add(image)
+      })
+    }else{
+      if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[4] instanceof Konva.Image) {
+        (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(4, 1);
+        console.log('1')
+      }
+      else if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[3] instanceof Konva.Image) {
+          (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(3, 1);
+          console.log('2')
+      }
+    }
+    
     const node = mapObjects.get(step.objectName)?.current! as Konva.Node;
     const moving = backward ? step.steps[0] : step.steps.at(-1)
     if (step.steps.length <= 2) {
-      node.to({x: moving.x, y: moving.y, duration: duration / 1000})
+      node.to({x: moving?.x, y: moving?.y, duration: duration / 1000})
       return;
     }
     curvedMoveAnimation(node, backward ? [...step.steps].reverse() : step.steps, duration)
@@ -133,6 +158,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       setDrawings(drawings);
       setDeletedDrawings(deletedDrawings.concat(deleted));
       applyStepAnimated(deleted, 300, true)
+      console.log(...drawings)
     }
   }
 
@@ -142,6 +168,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       setDeletedDrawings(deletedDrawings);
       setDrawings(drawings.concat(returned));
       applyStepAnimated(returned, 300)
+      console.log(...drawings)
     }
   }
 
@@ -179,30 +206,31 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   function clearDeleted() {
     deletedDrawings.length = 0;
     setDeletedDrawings(deletedDrawings);
+    setDrawBlock(false)
   }
 
   const opponents = opponentsCoord.map((coord, ind) => {
-      if(opponentsCoord.length <= 5){
-        const opponent = drawings.findLast((val)=>val.objectName === `opponent${ind+1}`);
-        if(opponent){
-          coord.x = opponent.steps.at(-1)?.x ?? opponentsCoord[ind].x;
-          coord.y = opponent.steps.at(-1)?.y ?? opponentsCoord[ind].y;
-        }
-        return (
-          <Opponent 
-            innerRef={mapObjects.get(`opponent${ind+1}`) ?? null} 
-            id={`opponent${ind+1}`} 
-            key={`opponent${ind+1}`} 
-            x={coord.x} 
-            y={coord.y} 
-            drawings={drawings} 
-            setDrawings={setDrawings} 
-            additionFunc={()=>clearDeleted()}
-            disabled={draw?.start!==null}
-            ballRef={ball}/>
-        )
+    if(opponentsCoord.length <= 5){
+      const opponent = drawings.findLast((val)=>val.objectName === `opponent${ind+1}`);
+      if(opponent){
+        coord.x = opponent.steps.at(-1)?.x ?? opponentsCoord[ind].x;
+        coord.y = opponent.steps.at(-1)?.y ?? opponentsCoord[ind].y;
       }
-    })
+      return (
+        <Opponent 
+          innerRef={mapObjects.get(`opponent${ind+1}`) ?? null} 
+          id={`opponent${ind+1}`} 
+          key={`opponent${ind+1}`} 
+          x={coord.x} 
+          y={coord.y} 
+          drawings={drawings} 
+          setDrawings={setDrawings} 
+          additionFunc={()=>clearDeleted()}
+          disabled={draw?.start!==null}
+          ballRef={ball}/>
+      )
+    }
+  })
 
   return (
     <div className='p-8'>
@@ -212,7 +240,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         </Link>
       </div>
       <div className='flex justify-center text-3xl'>
-        <input className='bg-black' maxLength={20} minLength={3}
+        <input className='bg-transparent' maxLength={20} minLength={3}
           value={draw?.name ?? ''} 
           onChange={e => setDraw({...draw, id: draw?.id ?? 0, name: e.target.value})} 
         />
@@ -221,6 +249,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
             <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw?.start!==null}/>
             <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={draw?.start===null}/>
+            <Image src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
             <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
             <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
             <ButtonWithIcon handleClick={() => play()} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
@@ -239,19 +268,20 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           onDragOver={(e) => e.preventDefault()}
         >
           <Stage
-            className='border-black border-2 '
-            style={{ backgroundImage: `url(/background.jpg)`, backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%' }}
+            className='border-black border-2 bg-center'
+            style={{ backgroundImage: `url(${areaLink.current})`, 
+              backgroundRepeat: 'no-repeat', backgroundSize: 'cover' }}
             width={window.innerWidth*0.75 - 50}
             height={window.innerHeight*0.73 - 100}
             id="container"
             ref={stage}
           >
             <Layer ref={layer}>
-              <Player innerRef={player1} id={'player1'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
-              <Player innerRef={player2} id={'player2'} x={320} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
-              <Player innerRef={player3} id={'player3'} x={615} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
-              <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
-              <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball}/>
+              <Player innerRef={player1} id={'player1'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+              <Player innerRef={player2} id={'player2'} x={320} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+              <Player innerRef={player3} id={'player3'} x={615} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+              <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+              <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
               {opponents}
               <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true} ballRef={null}/>
             </Layer>

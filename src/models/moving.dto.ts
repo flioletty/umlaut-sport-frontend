@@ -8,4 +8,5 @@ export interface Step {
     steps: Moving[];
     label: string;
     hasBall: boolean;
+    hasBlock: boolean;
 }

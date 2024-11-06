@@ -4,6 +4,7 @@ import Konva from "konva";
 
 export interface DraggableThingProps extends DraggableBallProps {
     src: string;
+    draggable?: boolean;
 }
 
 export interface DraggableBallProps {
@@ -17,6 +18,7 @@ export interface DraggableBallProps {
     disabled?: boolean;
     name?: string;
     ballRef: React.MutableRefObject<Konva.Node> | null;
+    block?: boolean;
 }
 
 export interface ButtonProps {
@@ -59,7 +61,7 @@ export interface LineInputProps {
 
 export interface OptionModel {
     name: string;
-    id: number;
+    id: number | string;
 }
 export interface LineSelectProps {
     color?: ButtonColor;
