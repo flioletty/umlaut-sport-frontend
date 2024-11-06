@@ -67,8 +67,8 @@ export interface LineSelectProps {
     color?: ButtonColor;
     label: string;
     options: OptionModel[];
-    onChange: React.Dispatch<React.SetStateAction<number>>;
-    value: number;
+    onChange: React.Dispatch<React.SetStateAction<number>> | React.Dispatch<React.SetStateAction<string>>;
+    value: number | string;
 }
 
 export interface BallProps extends DraggableBallProps {

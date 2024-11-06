@@ -15,11 +15,14 @@ import { prepare } from '../utils/bezier';
 import Image from 'next/image';
 import { Opponent } from './opponent';
 import { StartLabels } from '../models/start-labels';
+import TextareaAutosize from 'react-textarea-autosize';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
   const [deletedDrawings, setDeletedDrawings] = React.useState<Step[]>([]);
   const [drawBlock, setDrawBlock] = useState<boolean>(false);
+  const [commentVisible, setCommentVisible] = useState<boolean>(false);
+  const [comment, setComment] = useState<string>('');
   const areaLink = React.useRef('/half-background-rotated-cropped-rotated.svg')
 
   const player1 = React.useRef( null );
@@ -60,6 +63,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       if (Number(id)) {
         const strategy = await getDrawingById(Number(id));
         setDraw(strategy);
+        setComment(strategy.comment)
         if(strategy.data)
           setDrawings([...strategy.data]);
         if(strategy.start) {
@@ -71,14 +75,12 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             StartLabels.set(val.objectName, val.label);
           });
         }
-        console.log(strategy)
         if(strategy.area === 'full') {
           areaLink.current = '/half-background-rotated.svg'
         }
       }
     }
     create();
-    
   },[])
 
   function curvedMoveAnimation(node : Konva.Node, movings : Moving[], duration : number) {
@@ -126,7 +128,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           console.log('2')
       }
     }
-    
+
     const node = mapObjects.get(step.objectName)?.current! as Konva.Node;
     const moving = backward ? step.steps[0] : step.steps.at(-1)
     if (step.steps.length <= 2) {
@@ -145,6 +147,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     let i = 0;
     setTimeout(function run() {
       if(i<drawings.length) {
+        console.log(drawings[i])
         applyStepAnimated(drawings[i], 1000)
         i++;
       }
@@ -195,7 +198,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       data: [],
       area: draw?.area ?? '',
       folder_id: draw?.folder_id ?? 1,
-      comment: draw?.comment ?? '',
+      comment: comment,
     }
     updateDrawing(schema);
     setDraw(schema);
@@ -245,7 +248,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           onChange={e => setDraw({...draw, id: draw?.id ?? 0, name: e.target.value})} 
         />
       </div>
-      <div className='flex justify-between'>
+      <div className='flex justify'>
         <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
             <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw?.start!==null}/>
             <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={draw?.start===null}/>
@@ -253,7 +256,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
             <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
             <ButtonWithIcon handleClick={() => play()} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
-            <ButtonWithIcon handleClick={() => {}} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
+            <ButtonWithIcon handleClick={() => setCommentVisible(!commentVisible)} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
         </div>
         <div className='m-6 mx-10'
           onDrop={(e) => {
@@ -271,21 +274,24 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             className='border-black border-2 bg-center'
             style={{ backgroundImage: `url(${areaLink.current})`, 
               backgroundRepeat: 'no-repeat', backgroundSize: 'cover' }}
-            width={window.innerWidth*0.75 - 50}
+            width={window.innerWidth*0.75 - 150}
             height={window.innerHeight*0.73 - 100}
             id="container"
             ref={stage}
           >
             <Layer ref={layer}>
-              <Player innerRef={player1} id={'player1'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
-              <Player innerRef={player2} id={'player2'} x={320} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
-              <Player innerRef={player3} id={'player3'} x={615} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
-              <Player innerRef={player4} id={'player4'} x={920} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
-              <Player innerRef={player5} id={'player5'} x={1100} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+              <Player innerRef={player1} id={'player1'} x={55} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+              <Player innerRef={player2} id={'player2'} x={235} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+              <Player innerRef={player3} id={'player3'} x={530} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+              <Player innerRef={player4} id={'player4'} x={835} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+              <Player innerRef={player5} id={'player5'} x={1015} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
               {opponents}
               <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true} ballRef={null}/>
             </Layer>
           </Stage>
+        </div>
+        <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
+          <TextareaAutosize minRows={3} placeholder='Введите свой комментарий' maxRows={20} className='bg-transparent border-orange-500' value={comment} onChange={(e)=>setComment(e.target.value)}></TextareaAutosize>
         </div>
       </div>
       <div className='flex items-center justify-end'>
@@ -296,7 +302,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             data: [...drawings],
             area: draw?.area ?? '',
             folder_id: draw?.folder_id ?? 1,
-            comment: draw?.comment ?? ''
+            comment: comment,
           })}} label='Сохранить' color='orange'/>
         <Button clickHandler={()=>{}} label='Отмена'/>
       </div>
