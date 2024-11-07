@@ -13,11 +13,11 @@ export interface DraggableBallProps {
     x: number;
     y: number;
     id: string;
-    innerRef:  React.MutableRefObject<Konva.Group> | null;
+    innerRef:  React.RefObject<Konva.Group> | null;
     additionFunc?: ()=>void;
-    disabled?: boolean;
+    disabled: boolean;
     name?: string;
-    ballRef: React.MutableRefObject<Konva.Node> | null;
+    ballRef: React.RefObject<Konva.Node> | null;
     block?: boolean;
 }
 
@@ -57,6 +57,14 @@ export interface LineInputProps {
     label: string;
     onChange: React.Dispatch<React.SetStateAction<string>>;
     value: string;
+}
+
+export interface EditableTextProps {
+    x : number;
+    y : number;
+    onChange : (value: string) => void;
+    text : string;
+    disabled : boolean;
 }
 
 export interface OptionModel {

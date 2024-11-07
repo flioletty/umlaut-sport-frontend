@@ -4,7 +4,7 @@ import { Strategy } from "@/src/components/strategy";
 import { Draw } from "@/src/models/draw.dto";
 import { createDrawing, getAllDrawing } from "@/src/services/drawing-service";
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure} from "@nextui-org/modal";
 import { Button } from "@/src/components/button";
 import { Line } from "@/src/components/line";
@@ -13,7 +13,6 @@ import { LineSelect } from "@/src/components/line-select";
 import { useRouter } from "next/navigation";
 import { createFolder, getAllFolders } from "@/src/services/folder-service";
 import { Folder } from "@/src/models/folder.dto";
-import { OptionModel } from "@/src/models/props.models";
 
 
 export default function About() {
@@ -118,7 +117,7 @@ export default function About() {
                 </ModalBody>
                 <ModalFooter className="flex justify-end">
                   <Button label="Отмена" color="grey" clickHandler={onClose}/>
-                  <Button label="Сохранить" color="orange" clickHandler={async ()=>{const newFolder = await saveFolder(); onClose(); folders.push(newFolder)}} disabled={!(folderName.length > 2)}/>
+                  <Button label="Сохранить" color="orange" clickHandler={async ()=>{const newFolder = await saveFolder(); onClose(); folders.push(newFolder!)}} disabled={!(folderName.length > 2)}/>
                 </ModalFooter>
               </>
             )}
