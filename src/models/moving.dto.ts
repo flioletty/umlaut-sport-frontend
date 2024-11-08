@@ -10,3 +10,8 @@ export interface Step {
     hasBall: boolean;
     hasBlock: boolean;
 }
+
+export interface Snapshot {
+    snapnum: number;
+    steps: Step[];
+}

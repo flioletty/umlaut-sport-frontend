@@ -1,9 +1,8 @@
-import { Step } from "./moving.dto";
+import { Snapshot } from "./moving.dto";
 
 export interface Draw {
     id: number;
-    start?: Step[];
-    data?: Step[];
+    data?: Snapshot[];
     name: string;
     folder_id: number;
     comment: string;

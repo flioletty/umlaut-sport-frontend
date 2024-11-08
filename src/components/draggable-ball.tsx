@@ -41,7 +41,6 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
             const position = getPositionFromStage(e.target.getStage())
             const step = {objectName: id, steps: [position], label: text, hasBall: true} as Step
             setDrawings(drawings.concat(step))
-            console.log(...drawings)
         }
     }
 
@@ -64,7 +63,6 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
                         drawings.push(step1)
                     }
                     setDrawings(drawings)
-                    console.log(...drawings)
                 }} 
                 onDragMove={ (e) => {
                             const position = getPositionFromStage(e.target.getStage())
