@@ -2,7 +2,7 @@ import { Draw } from "../models/draw.dto";
 
 export const backendUrl = 'http://83.166.236.130:8000/api/v1/'
 
-export function createDrawing(name: string, folderId: number, area: string | number) {
+export function createDrawing(name: string, folderId: number | string, area: string | number) {
     const folder_id = Number(folderId)
     return fetch(backendUrl + 'draw', {
         method: 'POST',

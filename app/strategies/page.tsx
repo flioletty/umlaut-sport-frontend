@@ -21,8 +21,8 @@ export default function About() {
   const {isOpen, onOpen, onOpenChange} = useDisclosure();
   const {isOpen: isNewFolderOpen, onOpen: onNewFolderOpen, onOpenChange: onNewFolderOpenChange} = useDisclosure();
   const [name, setName] = useState<string>('Новая стратегия');
-  const [area, setArea] = useState<string>('full');
-  const [type, setType] = useState<number>(1);
+  const [area, setArea] = useState<string | number>('full');
+  const [type, setType] = useState<number | string>(1);
   const [folderName, setFolderName] = useState<string>('Новая папка');
 
   const router = useRouter()

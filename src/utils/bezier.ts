@@ -1,9 +1,9 @@
-const cache = {
-    '1': bezier1
-  , '2': bezier2
-  , '3': bezier3
-  , '4': bezier4
-}
+const cache = new Map([
+    ['1', bezier1]
+  , ['2', bezier2]
+  , ['3', bezier3]
+  , ['4', bezier4]
+])
 
 
 export function besier(arr: number[], t : number) {
@@ -11,11 +11,10 @@ export function besier(arr: number[], t : number) {
 }
 
 export function prepare(pieces: number) {
-  pieces = +pieces|0
   if (!pieces) throw new Error('Cannot create a interpolator with no elements')
-  if (cache[pieces]) return cache[pieces]
+  if (cache.has(pieces.toString())) return cache.get(pieces.toString())
 
-  let fn = ['var ut = 1 - t', '']
+  let fn : string | string[] = ['var ut = 1 - t', '']
 
   let n = pieces
   while (n--) {
@@ -49,20 +48,20 @@ export function prepare(pieces: number) {
 // helps to cover the most common cases :)
 //
 
-function bezier1(arr) {
+function bezier1(arr: number[]) {
   return arr[0]
 }
 
-function bezier2(arr, t) {
+function bezier2(arr: number[], t: number) {
   return arr[0] + (arr[1] - arr[0]) * t
 }
 
-function bezier3(arr, t) {
+function bezier3(arr: number[], t: number) {
   const ut = 1 - t
   return (arr[0] * ut + arr[1] * t) * ut + (arr[1] * ut + arr[2] * t) * t
 }
 
-function bezier4(arr, t) {
+function bezier4(arr: number[], t: number) {
   const ut = 1 - t
   const a1 = arr[1] * ut + arr[2] * t
   return ((arr[0] * ut + arr[1] * t) * ut + a1 * t) * ut + (a1 * ut + (arr[2] * ut + arr[3] * t) * t) * t

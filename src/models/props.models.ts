@@ -75,7 +75,7 @@ export interface LineSelectProps {
     color?: ButtonColor;
     label: string;
     options: OptionModel[];
-    onChange: React.Dispatch<React.SetStateAction<number>> | React.Dispatch<React.SetStateAction<string>>;
+    onChange: (React.Dispatch<React.SetStateAction<string | number>>);
     value: number | string;
 }
 
