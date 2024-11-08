@@ -7,6 +7,7 @@ import useImage from "use-image";
 import { EditableText } from "./editable-text";
 import { StartLabels } from "../models/start-labels";
 import Konva from "konva";
+import { KonvaEventObject } from "konva/lib/Node";
 
 export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, additionFunc = () => {}, disabled, ballRef, block=false, draggable=true} : DraggableThingProps) {
     
@@ -25,19 +26,19 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
         return {x: circle.attrs.x, y: circle.attrs.y} as Moving
     }
 
-    function dragStart(e) {
+    function dragStart(e : KonvaEventObject<DragEvent>) {
         steps.length = 0
         setSteps(steps)
         const position = getPositionFromStage(e.target.getStage())
         setSteps(steps.concat(position))
     }
 
-    function addBall(e) {
+    function addBall(e : KonvaEventObject<MouseEvent>) {
         if(innerRef && ballRef) {
             setHasBall(true);
-            ballRef.current._setAttr('x', 0);
-            ballRef.current._setAttr('y', 0);
-            (innerRef?.current as Konva.Group).add(ballRef?.current as Konva.Node)
+            ballRef.current?._setAttr('x', 0);
+            ballRef.current?._setAttr('y', 0);
+            (innerRef?.current as Konva.Group).add(ballRef?.current as Konva.Group)
             const position = getPositionFromStage(e.target.getStage())
             const step = {objectName: id, steps: [position], label: text, hasBall: true} as Step
             setDrawings(drawings.concat(step))
@@ -86,7 +87,7 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
             >
             <Image alt='player' image={image}/>
             <Text fontSize={32} x={25} y={21} text={id==='ball' ? '' : id.toString().at(-1)}/>
-            <EditableText x={15} y={75} text={text} onChange={(value) => {setText(value); StartLabels.set(id, value)}} disabled={disabled}/>
+            <EditableText x={15} y={75} text={text} onChange={(value : string) => {setText(value); StartLabels.set(id, value)}} disabled={disabled}/>
         </Group>
     )
 }

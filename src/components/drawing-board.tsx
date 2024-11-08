@@ -2,7 +2,7 @@
 
 import { getDrawingById, updateDrawing } from '@/src/services/drawing-service';
 import Konva from 'konva';
-import React, { useEffect, useState } from 'react';
+import React, { MutableRefObject, useEffect, useState } from 'react';
 import { Stage, Layer } from 'react-konva';
 import { Draw } from '../models/draw.dto';
 import { Player } from './player';
@@ -16,6 +16,7 @@ import Image from 'next/image';
 import { Opponent } from './opponent';
 import { StartLabels } from '../models/start-labels';
 import TextareaAutosize from 'react-textarea-autosize';
+import { Group } from 'konva/lib/Group';
 import { SlideLine } from './slide-line';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
@@ -44,7 +45,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
 
   const [draw, setDraw] = React.useState<Draw>();
 
-  const mapObjects = new Map<string, React.MutableRefObject<null>>([
+  const mapObjects = new Map<string, React.RefObject<Group>>([
     ["player1", player1],
     ["player2", player2],
     ["player3", player3],
@@ -90,7 +91,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     const y = movings.map(_ => _.y)
     const timeStep = 1 / duration;
     const anim = new Konva.Animation(function (frame) {
-      const t = frame?.time * timeStep;
+      if (frame == undefined) return;
+      const t = frame.time * timeStep;
       if (1 <= t) {
         anim.stop();
         return;
@@ -103,9 +105,9 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
 
   function applyStepAnimated(step : Step, duration : number, backward : boolean = false) {
     if(step.hasBall) {
-      mapObjects.get('ball')?.current!._setAttr('x', 0);
-      mapObjects.get('ball')?.current!._setAttr('y', 0);
-      (mapObjects.get(step.objectName)?.current! as Konva.Group).add(mapObjects.get('ball')?.current! as Konva.Node)
+      //mapObjects.get('ball')?.current!._setAttr('x', 0);
+      //mapObjects.get('ball')?.current!._setAttr('y', 0);
+      (mapObjects.get(step.objectName)?.current! as Konva.Group).add(mapObjects.get('ball')?.current! as Konva.Group)
     }else{
       if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[4] instanceof Konva.Group) {
         (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(4, 1);
@@ -217,7 +219,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       }
       return (
         <Opponent 
-          innerRef={mapObjects.get(`opponent${ind+1}`) ?? null} 
+          innerRef={(mapObjects.get(`opponent${ind+1}`) ?? null) as (MutableRefObject<Group> | null) } 
           id={`opponent${ind+1}`} 
           key={`opponent${ind+1}`} 
           x={coord.x} 
@@ -226,7 +228,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           setDrawings={setDrawings} 
           additionFunc={()=>clearDeleted()}
           disabled={draw?.start!==null}
-          ballRef={ball}/>
+          ballRef={ball as unknown as (React.MutableRefObject<Konva.Node> | null)}/>
       )
     }
   })
@@ -242,7 +244,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         <div className='flex justify-center text-3xl'>
           <input className='bg-transparent' maxLength={20} minLength={3}
             value={draw?.name ?? ''} 
-            onChange={e => setDraw({...draw, id: draw?.id ?? 0, name: e.target.value})} 
+            onChange={e => setDraw(draw==undefined ? undefined : {...draw, id: draw?.id ?? 0, name: e.target.value})} 
           />
         </div>
         <div className='flex justify'>
