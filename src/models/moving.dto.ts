@@ -5,7 +5,7 @@ export interface Moving {
 
 export interface Step {
     objectName: string;
-    steps: Moving[];
+    movings: Moving[];
     label: string;
     hasBall: boolean;
     hasBlock: boolean;

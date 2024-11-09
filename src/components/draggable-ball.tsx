@@ -1,19 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Group, Image, Text } from "react-konva"
 import { DraggableThingProps } from "../models/props.models"
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Step, Moving } from "../models/moving.dto";
 import useImage from "use-image";
 import { EditableText } from "./editable-text";
 import { StartLabels } from "../models/start-labels";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
+import { toRelative as toRelativeImpl, toAbsolute as toAbsoluteImpl } from "../utils/moving-convers";
 
-export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, additionFunc = () => {}, disabled, ballRef, block=false, draggable=true} : DraggableThingProps) {
+export function DraggableBall({drawings, setDrawings, position, src, id, innerRef, additionFunc = () => {}, disabled, ballRef, block=false, draggable=true, windowHeight, windowWidth} : DraggableThingProps) {
     
     const [steps, setSteps] = React.useState<Moving[]>([]);
     const [text, setText] = React.useState(StartLabels.get(id) ?? '');
     const [hasBall, setHasBall] = React.useState(false);
+
+    const toRelative = useCallback((steps : Moving[] | Moving) => { return toRelativeImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
+    const toAbsolute = useCallback((steps : Moving[] | Moving) => { return toAbsoluteImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
     
     useEffect(()=>{setText(StartLabels.get(id) ?? '')}, [StartLabels.get(id), id])
     useEffect(()=>{
@@ -24,7 +28,7 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
   
     function getPositionFromStage(stage: any) {
         const circle = stage.getLayers()[0].findOne(`#${id}`)
-        return {x: circle.attrs.x, y: circle.attrs.y} as Moving
+        return toRelative({x: circle.attrs.x, y: circle.attrs.y} as Moving)
     }
 
     function dragStart(e : KonvaEventObject<DragEvent>) {
@@ -41,7 +45,7 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
             ballRef.current?._setAttr('y', 0);
             (innerRef?.current as Konva.Group).add(ballRef?.current as Konva.Group)
             const position = getPositionFromStage(e.target.getStage())
-            const step = {objectName: id, steps: [position], label: text, hasBall: true} as Step
+            const step = {objectName: id, movings: [position], label: text, hasBall: true} as Step
             setDrawings(drawings.concat(step))
         }
     }
@@ -49,21 +53,22 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
     const [image] = useImage(src);
 
     return(
-        <Group x={x} y={y} id={id}
+        <Group x={(toAbsolute(position) as Moving).x} y={(toAbsolute(position) as Moving).y} id={id}
             name={text}
             ref={innerRef}
                 draggable={draggable}
                 onDragEnd={() => {
-                    const step = {objectName: id, steps: [...steps].filter((el, ind)=>ind%8===0), label: text, hasBall: hasBall, hasBlock: false} as Step
+                    const step = {objectName: id, movings: [...steps].filter((el, ind)=>ind%8===0), label: text, hasBall: hasBall, hasBlock: false} as Step
                     if((innerRef?.current as Konva.Group)?.children.length<4)
                         step.hasBall = false;
+ 
                     drawings.push(step)
                     additionFunc();
                     if(block) {
                         Konva.Image.fromURL('/player-block.svg', (image) => {
                             (innerRef?.current as Konva.Group).add(image)
                         })
-                        const step1 = {objectName: id, steps: [steps.at(-1)], label: text, hasBall: hasBall, hasBlock: true} as Step
+                        const step1 = {objectName: id, movings: [steps.at(-1)], label: text, hasBall: hasBall, hasBlock: true} as Step
                         drawings.push(step1)
                     }
                     setDrawings(drawings)
