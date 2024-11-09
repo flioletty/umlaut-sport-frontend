@@ -17,9 +17,10 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
     
     useEffect(()=>{setText(StartLabels.get(id) ?? '')}, [StartLabels.get(id), id])
     useEffect(()=>{
-        if((ballRef?.current as Konva.Group)?.children.length<3)
+        if((innerRef?.current as Konva.Group)?.children.length<4)
             setHasBall(false)
-    }, [(ballRef?.current as Konva.Group)?.children])
+        console.log(hasBall, )
+    }, [(innerRef?.current as Konva.Group)?.children])
   
     function getPositionFromStage(stage: any) {
         const circle = stage.getLayers()[0].findOne(`#${id}`)
@@ -54,6 +55,8 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
                 draggable={draggable}
                 onDragEnd={() => {
                     const step = {objectName: id, steps: [...steps].filter((el, ind)=>ind%8===0), label: text, hasBall: hasBall, hasBlock: false} as Step
+                    if((innerRef?.current as Konva.Group)?.children.length<4)
+                        step.hasBall = false;
                     drawings.push(step)
                     additionFunc();
                     if(block) {
@@ -64,6 +67,7 @@ export function DraggableBall({drawings, setDrawings, x, y, src, id, innerRef, a
                         drawings.push(step1)
                     }
                     setDrawings(drawings)
+                    console.log(drawings)
                 }} 
                 onDragMove={ (e) => {
                             const position = getPositionFromStage(e.target.getStage())

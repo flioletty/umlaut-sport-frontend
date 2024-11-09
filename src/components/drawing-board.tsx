@@ -29,7 +29,9 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const [drawBlock, setDrawBlock] = useState<boolean>(false);
   const [commentVisible, setCommentVisible] = useState<boolean>(false);
   const [comment, setComment] = useState<string>('');
+  const [lastBallCoord, setlastBallCoord] = useState({x:0, y:0} as Moving)
   const areaLink = React.useRef('/half-background-rotated-cropped-rotated.svg')
+  const [slidesMax, setSlidesMax] = useState<number>(0);
 
   const player1 = React.useRef( null );
   const player2 = React.useRef( null );
@@ -75,14 +77,12 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         if(strategy.area === 'full') {
           areaLink.current = '/half-background-rotated.svg'
         }
-        console.log(strategy, snapshots)
       }
     }
     create();
   },[])
 
   function curvedMoveAnimation(node : Konva.Node, movings : Moving[], duration : number) {
-    console.log(node)
     const besier = prepare(movings.length);
     const x = movings.map(_ => _.x)
     const y = movings.map(_ => _.y)
@@ -103,9 +103,12 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
 
   function applyStepAnimated(step : Step, duration : number, backward : boolean = false) {
     if(step.hasBall) {
-      mapObjects.get('ball')?.current!._setAttr('x', 0);
-      mapObjects.get('ball')?.current!._setAttr('y', 0);
-      (mapObjects.get(step.objectName)?.current! as Konva.Group).add(mapObjects.get('ball')?.current! as Konva.Group)
+      setTimeout(()=>{
+        const ball = mapObjects.get('ball')?.current!;      
+        ball._setAttr('x', 0);
+        ball._setAttr('y', 0);
+        (mapObjects.get(step.objectName)?.current! as Konva.Group).add(ball as Konva.Group);
+      }, 50)
     }else{
       if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[4] instanceof Konva.Group) {
         (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(4, 1);
@@ -137,28 +140,45 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     return curvedMoveAnimation(node, backward ? [...step.steps].reverse() : step.steps, duration);
   }
 
-  function play() {
+  function play(duration: number, maxSnap: number) {
     console.log(snapshots)
     let i = 0;
+    let first = true;
+    setlastBallCoord({x:0, y:0} as Moving)
     setTimeout(function run() {
-      if(i<snapshots.length) {
+      if(i<maxSnap) {
         if(i===0){
           for(const st of snapshots[i].steps)
-          applyStepAnimated(st, 0)
+            applyStepAnimated(st, 0)
         }
         else {
           const mapa = new Map<string, Step[]>();
-          for(const step of snapshots[i].steps) {
+          for(let a = 0; a<snapshots[i].steps.length; a++) {
+            const step = snapshots[i].steps[a];
             const has = mapa.get(step.objectName);
-            if(has) {
+            if(!step.hasBall && has) {
               mapa.set(step.objectName, has.concat(step))
+            } else if(step.hasBall){
+              const hb = mapa.get('hasBall');
+              let res: Step[] = [];
+              // if(!first && hb?.at(-1)?.objectName!==step.objectName){
+              //   console.log(lastBallCoord)
+              //   hb ? res.push({objectName: 'ball', label: '', steps: [{x: (step.steps.at(0)?.x ?? 0) - lastBallCoord.x, y: (step.steps.at(0)?.y ?? 0) - lastBallCoord.y} as Moving]} as Step) : res.push({objectName: 'ball', label: '', steps: [{x: step.steps.at(0)?.x ?? 0 - lastBallCoord.x, y: step.steps.at(0)?.y ?? 0 - lastBallCoord.y} as Moving]} as Step);
+              //   console.log(res, lastBallCoord)
+              // }
+              setlastBallCoord(step.steps.at(-1) ?? lastBallCoord);
+              res.push(step);
+              first=false;
+              console.log('1')
+              mapa.set('hasBall', hb ? hb!.concat(res) : [...res]);
             } else {
               mapa.set(step.objectName, [step])
             }
           }
+          console.log(mapa)
           for(const obj of mapa.values().toArray()){
             let k = 0;
-            const time = 2000 / obj.length;
+            const time = duration / obj.length;
             setTimeout(function nextStep(){
               if(k<obj.length){
                 applyStepAnimated(obj.at(k)!, time)
@@ -169,9 +189,9 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           }
         }
         i++;
-        setTimeout(run, 2000);
+        setTimeout(run, duration);
       }
-    }, 2000);
+    }, duration);
   }
 
   function undo() {
@@ -205,10 +225,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             x: figure.attrs.x,
             y: figure.attrs.y
           }
-        ] as Moving[]
+        ] as Moving[],
+        hasBall: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[4] instanceof Konva.Group || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Group,
+        hasBlock: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[4] instanceof Konva.Image || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Image,
       } as Step)
     }
-    console.log('resres', res)
     const snap = {snapnum: 0, steps: res} as Snapshot;
     const schema = {
       id: draw?.id ?? 0,
@@ -255,7 +276,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   })
 
   function onPlusClicked() {
-    console.log(snapshots)
     if(snapshots.length === 0) {
       start();
     } else {
@@ -264,18 +284,20 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     }
     const newSnap = {snapnum: snapshots.length, steps: []} as Snapshot
     setCurrentSnapshot(newSnap);
+    setSlidesMax(slidesMax+1); 
   }
 
   function onMinusClicked() {
+    const last = snapshots.at(-1);
     snapshots.length -= 1;
+    setSlidesMax(slidesMax-1);
     setSnapshots(snapshots);
     const newCurSnap = snapshots.at(-1);
     setCurrentSnapshot(newCurSnap);
     setDrawings(newCurSnap?.steps ?? []);
-    if (newCurSnap?.steps) {
-      for(let j = 0; j<newCurSnap.steps.length; j++) {
-        applyStepAnimated(newCurSnap.steps[j], 0)
-      }
+    if(last) {
+      for(const step of last.steps)
+        applyStepAnimated(step, 100, true)
     }
   }
 
@@ -283,12 +305,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     const newCurSnap = snapshots.at(num);
     setCurrentSnapshot(newCurSnap);
     setDrawings(newCurSnap?.steps ?? []);
-    if (newCurSnap?.steps) {
-      for(let j = 0; j<newCurSnap.steps.length; j++) {
-        applyStepAnimated(newCurSnap.steps[j], 0)
-      }
-    }
+    console.log(newCurSnap)
+    play(100, num+1);
   }
+
+  console.log(drawings)
 
   return (
     <div className='p-8'>
@@ -311,7 +332,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               <Image src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
               <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
               <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
-              <ButtonWithIcon handleClick={() => play()} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
+              <ButtonWithIcon handleClick={() => play(2000, snapshots.length)} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
               <ButtonWithIcon handleClick={() => setCommentVisible(!commentVisible)} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
           </div>
           <div className='m-6 mx-10'
@@ -328,8 +349,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           >
             <Stage
               className='border-black border-2 bg-center'
-              style={{ backgroundImage: `url(${areaLink.current})`, 
-                backgroundRepeat: 'no-repeat', backgroundSize: 'cover' }}
+              style={{  
+                backgroundImage: `url(${areaLink.current})`, 
+                backgroundRepeat: 'no-repeat', backgroundSize: 'cover' 
+              }}
               width={window.innerWidth*0.75 - 150}
               height={window.innerHeight*0.73 - 100}
               id="container"
@@ -363,7 +386,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         </div>
       </div>
       <div className=''>
-        <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange}/>
+        <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange} slidesMax={slidesMax}/>
       </div>
     </div>
   );

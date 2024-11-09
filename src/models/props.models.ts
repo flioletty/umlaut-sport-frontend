@@ -87,4 +87,5 @@ export interface SlideLineProps {
     onPlus: ()=>void;
     onMinus: ()=>void;
     onChangeCur: (num: number)=>void;
+    slidesMax: number;
 }
