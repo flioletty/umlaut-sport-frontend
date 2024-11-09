@@ -46,13 +46,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const ball = React.useRef( null );
   const layer = React.useRef( null );
   const stage = React.useRef<Konva.Stage>( null );
-
-
-  const fieldWidth = window.innerWidth*0.75 - 150;
-  const fieldHeight = window.innerHeight*0.73 - 100;
+  const fieldWidth = React.useRef<number>( window.innerWidth*0.75 - 150 )
+  const fieldHeight = React.useRef<number>( fieldWidth.current / 3 * 2 )
+  const toAbsolute = useCallback(( movings : Moving | Moving[]) => toAbsoluteImlp(movings, fieldWidth.current, fieldHeight.current), [fieldWidth, fieldHeight]);
   const toRelative = useCallback((steps : Moving[] | Moving) => { return toRelativeImpl(steps, fieldWidth, fieldHeight); }, [fieldWidth, fieldHeight]);
-  const toAbsolute = useCallback(( movings : Moving | Moving[]) => toAbsoluteImlp(movings, fieldWidth, fieldHeight), [fieldWidth, fieldHeight])
-  
   const [opponentsCoord, setOpponentsCoord] = React.useState<Moving[]>([]);
 
   const [draw, setDraw] = React.useState<Draw>();
@@ -278,8 +275,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           additionFunc={()=>clearDeleted()}
           disabled={false}
           ballRef={ball as unknown as (React.MutableRefObject<Konva.Node> | null)}
-          windowHeight={fieldHeight} 
-          windowWidth={fieldWidth}/>
+          windowHeight={fieldHeight.current} 
+          windowWidth={fieldWidth.current}/>
       )
     }
   })
@@ -323,16 +320,16 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   return (
     <div className='p-8'>
       <div>
-        <div>
-          <Link href={{pathname: '/strategies'}}>
+        <div className='flex flex-row width-max'>
+          <Link href={{pathname: '/strategies'}} >
             <ButtonWithIcon handleClick={() => {}} color='grey' iconSrc='/back.svg' alt='back' width={40} height={40} className='m-2' label='К стратегиям'/>
           </Link>
-        </div>
-        <div className='flex justify-center text-3xl'>
+          <div className='flex justify-center items-center text-3xl grow width-max'>
           <input className='bg-transparent' maxLength={20} minLength={3}
             value={draw?.name ?? ''} 
             onChange={e => setDraw(draw==undefined ? undefined : {...draw, id: draw?.id ?? 0, name: e.target.value})} 
           />
+        </div>
         </div>
         <div className='flex justify'>
           <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
@@ -361,21 +358,24 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               style={{ 
                 backgroundImage: `url(${areaLink.current})`, 
                 backgroundRepeat: 'no-repeat', backgroundSize: 'cover' }}
-              width={fieldWidth}
-              height={fieldHeight}
+              width={fieldWidth.current}
+              height={fieldHeight.current}
               id="container"
               ref={stage}
             >
               <Layer ref={layer}>
-                <Player innerRef={player1} id={'player1'} position={{x:0.2, y:0.45} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight} windowWidth={fieldWidth}/>
-                <Player innerRef={player2} id={'player2'} position={{x:0.3, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight} windowWidth={fieldWidth}/>
-                <Player innerRef={player3} id={'player3'} position={{x:0.45, y:0.7} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight} windowWidth={fieldWidth}/>
-                <Player innerRef={player4} id={'player4'} position={{x:0.6, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight} windowWidth={fieldWidth}/>
-                <Player innerRef={player5} id={'player5'} position={{x:0.7, y:0.45} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight} windowWidth={fieldWidth}/>
+                <Player innerRef={player1} id={'player1'} position={{x:0.2, y:0.45} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Player innerRef={player2} id={'player2'} position={{x:0.3, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Player innerRef={player3} id={'player3'} position={{x:0.45, y:0.7} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Player innerRef={player4} id={'player4'} position={{x:0.6, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Player innerRef={player5} id={'player5'} position={{x:0.7, y:0.45} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
                 {opponents}
-                <Ball innerRef={ball} id={'ball'} position={{x:0.45, y:0.5} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true} ballRef={null} windowHeight={fieldHeight} windowWidth={fieldWidth}/>
+                <Ball innerRef={ball} id={'ball'} position={{x:0.45, y:0.5} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true} ballRef={null} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
               </Layer>
             </Stage>
+          </div>
+          <div className='mt-6 mb-6 max-h-max'>
+              <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange} slidesMax={slidesMax} />
           </div>
           {/* <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
             <TextareaAutosize minRows={3} placeholder='Введите свой комментарий' maxRows={20} className='bg-transparent border-orange-500' value={comment} onChange={(e)=>setComment(e.target.value)}></TextareaAutosize>
@@ -392,9 +392,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             })}} label='Сохранить' color='orange'/>
           <Button clickHandler={()=>{}} label='Отмена'/>
         </div>
-      </div>
-      <div className=''>
-        <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange} slidesMax={slidesMax}/>
       </div>
     </div>
   );
