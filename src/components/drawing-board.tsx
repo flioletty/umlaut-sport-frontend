@@ -19,6 +19,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import { Group } from 'konva/lib/Group';
 import { SlideLine } from './slide-line';
 import { toAbsolute as toAbsoluteImlp } from '../utils/moving-convers';
+import { toRelative as toRelativeImpl } from '../utils/moving-convers';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -49,6 +50,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
 
   const fieldWidth = window.innerWidth*0.75 - 150;
   const fieldHeight = window.innerHeight*0.73 - 100;
+  const toRelative = useCallback((steps : Moving[] | Moving) => { return toRelativeImpl(steps, fieldWidth, fieldHeight); }, [fieldWidth, fieldHeight]);
   const toAbsolute = useCallback(( movings : Moving | Moving[]) => toAbsoluteImlp(movings, fieldWidth, fieldHeight), [fieldWidth, fieldHeight])
   
   const [opponentsCoord, setOpponentsCoord] = React.useState<Moving[]>([]);
@@ -225,12 +227,12 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       res.push({
         label: figure.attrs.name,
         objectName: figure.attrs.id,
-        movings : [
+        movings : toRelative([
           {
             x: figure.attrs.x,
             y: figure.attrs.y
           }
-        ] as Moving[],
+        ] as Moving[]),
         hasBall: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[4] instanceof Konva.Group || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Group,
         hasBlock: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[4] instanceof Konva.Image || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Image,
       } as Step)
@@ -249,6 +251,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     drawings.length = 0;
     setDrawings(drawings);
     setSnapshots([snap]);
+    console.log(snap)
   }
 
   function clearDeleted() {
@@ -315,7 +318,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     play(100, num+1);
   }
 
-  console.log(drawings)
+  console.log(drawings.length)
 
   return (
     <div className='p-8'>
@@ -336,10 +339,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={true}/>
               <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true}/>
               <Image src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
-              <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
+              <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length===0}/>
               <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
               <ButtonWithIcon handleClick={() => play(2000, snapshots.length)} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
-              <ButtonWithIcon handleClick={() => setCommentVisible(!commentVisible)} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
+              <ButtonWithIcon handleClick={() => {setCommentVisible(!commentVisible); console.log(drawings.length);}} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
           </div>
           <div className='m-6 mx-10'
             onDrop={(e) => {

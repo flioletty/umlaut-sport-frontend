@@ -46,7 +46,7 @@ export function DraggableBall({drawings, setDrawings, position, src, id, innerRe
             (innerRef?.current as Konva.Group).add(ballRef?.current as Konva.Group)
             const position = getPositionFromStage(e.target.getStage())
             const step = {objectName: id, movings: [position], label: text, hasBall: true} as Step
-            setDrawings(drawings.concat(step))
+            setDrawings([...drawings.concat(step)])
         }
     }
 
@@ -71,7 +71,7 @@ export function DraggableBall({drawings, setDrawings, position, src, id, innerRe
                         const step1 = {objectName: id, movings: [steps.at(-1)], label: text, hasBall: hasBall, hasBlock: true} as Step
                         drawings.push(step1)
                     }
-                    setDrawings(drawings)
+                    setDrawings([...drawings])
                     console.log(drawings)
                 }} 
                 onDragMove={ (e) => {
