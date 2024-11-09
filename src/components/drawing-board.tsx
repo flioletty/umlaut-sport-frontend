@@ -49,7 +49,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const fieldWidth = React.useRef<number>( window.innerWidth*0.75 - 150 )
   const fieldHeight = React.useRef<number>( fieldWidth.current / 3 * 2 )
   const toAbsolute = useCallback(( movings : Moving | Moving[]) => toAbsoluteImlp(movings, fieldWidth.current, fieldHeight.current), [fieldWidth, fieldHeight]);
-  const toRelative = useCallback((steps : Moving[] | Moving) => { return toRelativeImpl(steps, fieldWidth, fieldHeight); }, [fieldWidth, fieldHeight]);
+  const toRelative = useCallback((steps : Moving[] | Moving) => { return toRelativeImpl(steps, fieldWidth.current, fieldHeight.current); }, [fieldWidth, fieldHeight]);
   const [opponentsCoord, setOpponentsCoord] = React.useState<Moving[]>([]);
 
   const [draw, setDraw] = React.useState<Draw>();
