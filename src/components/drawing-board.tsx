@@ -7,7 +7,7 @@ import { Stage, Layer } from 'react-konva';
 import { Draw } from '../models/draw.dto';
 import { Player } from './player';
 import { Ball } from './ball';
-import { Moving, Step } from '../models/moving.dto';
+import { Moving, Snapshot, Step } from '../models/moving.dto';
 import { Button } from './button';
 import { ButtonWithIcon } from './button-with-icon';
 import Link from 'next/link';
@@ -18,9 +18,13 @@ import { StartLabels } from '../models/start-labels';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Group } from 'konva/lib/Group';
 import { SlideLine } from './slide-line';
+import { forEach } from 'lodash';
+import { resolve } from 'path';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
+  const [snapshots, setSnapshots] = React.useState<Snapshot[]>([]);
+  const [currentSnapshot, setCurrentSnapshot] = React.useState<Snapshot>();
   const [deletedDrawings, setDeletedDrawings] = React.useState<Step[]>([]);
   const [drawBlock, setDrawBlock] = useState<boolean>(false);
   const [commentVisible, setCommentVisible] = useState<boolean>(false);
@@ -67,25 +71,18 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         setDraw(strategy);
         setComment(strategy.comment)
         if(strategy.data)
-          setDrawings([...strategy.data]);
-        if(strategy.start) {
-          strategy.start.forEach((val)=>{
-            if(val.objectName.startsWith('opponent')) {
-              opponentsCoord[Number(val.objectName.at(-1))-1] = {x: val.steps.at(-1)?.x, y: val.steps.at(-1)?.y} as Moving;
-              setOpponentsCoord(opponentsCoord);
-            }
-            StartLabels.set(val.objectName, val.label);
-          });
-        }
+          setSnapshots([...strategy.data]);
         if(strategy.area === 'full') {
           areaLink.current = '/half-background-rotated.svg'
         }
+        console.log(strategy, snapshots)
       }
     }
     create();
   },[])
 
   function curvedMoveAnimation(node : Konva.Node, movings : Moving[], duration : number) {
+    console.log(node)
     const besier = prepare(movings.length);
     const x = movings.map(_ => _.x)
     const y = movings.map(_ => _.y)
@@ -101,12 +98,13 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       node.y(besier(y, t))
     }, layer);
     anim.start();
+    return anim;
   }
 
   function applyStepAnimated(step : Step, duration : number, backward : boolean = false) {
     if(step.hasBall) {
-      //mapObjects.get('ball')?.current!._setAttr('x', 0);
-      //mapObjects.get('ball')?.current!._setAttr('y', 0);
+      mapObjects.get('ball')?.current!._setAttr('x', 0);
+      mapObjects.get('ball')?.current!._setAttr('y', 0);
       (mapObjects.get(step.objectName)?.current! as Konva.Group).add(mapObjects.get('ball')?.current! as Konva.Group)
     }else{
       if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[4] instanceof Konva.Group) {
@@ -136,23 +134,44 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       node.to({x: moving?.x, y: moving?.y, duration: duration / 1000})
       return;
     }
-    curvedMoveAnimation(node, backward ? [...step.steps].reverse() : step.steps, duration)
+    return curvedMoveAnimation(node, backward ? [...step.steps].reverse() : step.steps, duration);
   }
 
   function play() {
-    if(draw?.start){
-      for(let j = 0; j<draw.start.length; j++) {
-        applyStepAnimated(draw.start[j], 0)
-      }
-    }
+    console.log(snapshots)
     let i = 0;
     setTimeout(function run() {
-      if(i<drawings.length) {
-        applyStepAnimated(drawings[i], 1000)
+      if(i<snapshots.length) {
+        if(i===0){
+          for(const st of snapshots[i].steps)
+          applyStepAnimated(st, 0)
+        }
+        else {
+          const mapa = new Map<string, Step[]>();
+          for(const step of snapshots[i].steps) {
+            const has = mapa.get(step.objectName);
+            if(has) {
+              mapa.set(step.objectName, has.concat(step))
+            } else {
+              mapa.set(step.objectName, [step])
+            }
+          }
+          for(const obj of mapa.values().toArray()){
+            let k = 0;
+            const time = 2000 / obj.length;
+            setTimeout(function nextStep(){
+              if(k<obj.length){
+                applyStepAnimated(obj.at(k)!, time)
+                k++;
+                setTimeout(nextStep, time);
+              }
+            }, 0);
+          }
+        }
         i++;
+        setTimeout(run, 2000);
       }
-      setTimeout(run, 1000);
-    }, 1000);      
+    }, 2000);
   }
 
   function undo() {
@@ -189,11 +208,12 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         ] as Moving[]
       } as Step)
     }
+    console.log('resres', res)
+    const snap = {snapnum: 0, steps: res} as Snapshot;
     const schema = {
       id: draw?.id ?? 0,
       name: draw?.name ?? '',
-      start: res, 
-      data: [],
+      data: [snap],
       area: draw?.area ?? '',
       folder_id: draw?.folder_id ?? 1,
       comment: comment,
@@ -202,6 +222,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     setDraw(schema);
     drawings.length = 0;
     setDrawings(drawings);
+    setSnapshots([snap]);
   }
 
   function clearDeleted() {
@@ -227,11 +248,47 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           drawings={drawings} 
           setDrawings={setDrawings} 
           additionFunc={()=>clearDeleted()}
-          disabled={draw?.start!==null}
+          disabled={false}
           ballRef={ball as unknown as (React.MutableRefObject<Konva.Node> | null)}/>
       )
     }
   })
+
+  function onPlusClicked() {
+    console.log(snapshots)
+    if(snapshots.length === 0) {
+      start();
+    } else {
+      setSnapshots(snapshots.concat({snapnum: snapshots.length, steps: [...drawings]} as Snapshot));
+      setDrawings([]);
+    }
+    const newSnap = {snapnum: snapshots.length, steps: []} as Snapshot
+    setCurrentSnapshot(newSnap);
+  }
+
+  function onMinusClicked() {
+    snapshots.length -= 1;
+    setSnapshots(snapshots);
+    const newCurSnap = snapshots.at(-1);
+    setCurrentSnapshot(newCurSnap);
+    setDrawings(newCurSnap?.steps ?? []);
+    if (newCurSnap?.steps) {
+      for(let j = 0; j<newCurSnap.steps.length; j++) {
+        applyStepAnimated(newCurSnap.steps[j], 0)
+      }
+    }
+  }
+
+  function onCurrentSnapChange(num: number) {
+    const newCurSnap = snapshots.at(num);
+    setCurrentSnapshot(newCurSnap);
+    setDrawings(newCurSnap?.steps ?? []);
+    if (newCurSnap?.steps) {
+      for(let j = 0; j<newCurSnap.steps.length; j++) {
+        applyStepAnimated(newCurSnap.steps[j], 0)
+      }
+    }
+  }
 
   return (
     <div className='p-8'>
@@ -249,8 +306,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         </div>
         <div className='flex justify'>
           <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
-              <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={draw?.start!==null}/>
-              <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={draw?.start===null}/>
+              <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={true}/>
+              <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true}/>
               <Image src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
               <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length<=0}/>
               <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
@@ -279,26 +336,25 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               ref={stage}
             >
               <Layer ref={layer}>
-                <Player innerRef={player1} id={'player1'} x={55} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
-                <Player innerRef={player2} id={'player2'} x={235} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
-                <Player innerRef={player3} id={'player3'} x={530} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
-                <Player innerRef={player4} id={'player4'} x={835} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
-                <Player innerRef={player5} id={'player5'} x={1015} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={draw?.start!==null} ballRef={ball} block={drawBlock}/>
+                <Player innerRef={player1} id={'player1'} x={55} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock}/>
+                <Player innerRef={player2} id={'player2'} x={235} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock}/>
+                <Player innerRef={player3} id={'player3'} x={530} y={360} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock}/>
+                <Player innerRef={player4} id={'player4'} x={835} y={280} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock}/>
+                <Player innerRef={player5} id={'player5'} x={1015} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock}/>
                 {opponents}
                 <Ball innerRef={ball} id={'ball'} x={140} y={100} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true} ballRef={null}/>
               </Layer>
             </Stage>
           </div>
-          <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
+          {/* <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
             <TextareaAutosize minRows={3} placeholder='Введите свой комментарий' maxRows={20} className='bg-transparent border-orange-500' value={comment} onChange={(e)=>setComment(e.target.value)}></TextareaAutosize>
-          </div>
+          </div> */}
         </div>
         <div className='flex items-center justify-end'>
           <Button clickHandler={()=>{updateDrawing({
               id: draw?.id ?? 0,
               name: draw?.name ?? '',
-              start: draw?.start, 
-              data: [...drawings],
+              data: [...snapshots],
               area: draw?.area ?? '',
               folder_id: draw?.folder_id ?? 1,
               comment: comment,
@@ -307,7 +363,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         </div>
       </div>
       <div className=''>
-        <SlideLine/>
+        <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange}/>
       </div>
     </div>
   );

@@ -82,3 +82,9 @@ export interface LineSelectProps {
 export interface BallProps extends DraggableBallProps {
     src: string;
 }
+
+export interface SlideLineProps {
+    onPlus: ()=>void;
+    onMinus: ()=>void;
+    onChangeCur: (num: number)=>void;
+}

@@ -1,25 +1,26 @@
 import Slider from "@mui/material/Slider";
 import { ButtonWithIcon } from "./button-with-icon";
 import { useState } from "react";
+import { SlideLineProps } from "../models/props.models";
 
-export function SlideLine() {
+export function SlideLine({onPlus, onMinus, onChangeCur}: SlideLineProps) {
     const [slidesCount, setSlidesCount] = useState<number>(0);
     const [slidesMax, setSlidesMax] = useState<number>(0);
 
     return (
         <div className="">
-            <ButtonWithIcon handleClick={() => {setSlidesMax(slidesMax-1)}} iconSrc='/minus.svg' color='grey' alt='minus' width={53} height={53} disabled={false}/>
+            <ButtonWithIcon handleClick={() => {setSlidesMax(slidesMax-1); onMinus()}} iconSrc='/minus.svg' color='grey' alt='minus' width={53} height={53} disabled={false}/>
             <Slider
                 aria-label="Temperature"
                 defaultValue={30}
                 value={slidesCount}
-                onChange={(e, newVal) => setSlidesCount(newVal as number)}
+                onChange={(e, newVal) => {onChangeCur(newVal as number); setSlidesCount(newVal as number);}}
                 valueLabelDisplay="auto"
                 step={1}
                 min={0}
                 max={slidesMax}
             />
-            <ButtonWithIcon handleClick={() => {setSlidesMax(slidesMax+1)}} iconSrc='/plus.svg' alt='plus' color='grey' width={53} height={53} disabled={false}/>
+            <ButtonWithIcon handleClick={() => {setSlidesMax(slidesMax+1); onPlus(); setSlidesCount(slidesCount+1)}} iconSrc='/plus.svg' alt='plus' color='grey' width={53} height={53} disabled={false}/>
         </div>
     )
 }
