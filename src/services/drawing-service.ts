@@ -10,7 +10,7 @@ export function createDrawing(name: string, folderId: number | string, area: str
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({name: name, folder_id: folder_id, area: area})
+        body: JSON.stringify({name: name, folder_id: folder_id, area: 'half'})
     })
     .then((result)=>result.json())
     .then((json)=>{
@@ -20,6 +20,7 @@ export function createDrawing(name: string, folderId: number | string, area: str
 
 
 export function updateDrawing(data: Draw) {
+  data.area = 'half'
     return fetch(backendUrl + 'draw', {
         method: 'PUT',
         mode: 'cors',

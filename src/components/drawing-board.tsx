@@ -78,8 +78,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         const strategy = await getDrawingById(Number(id));
         setDraw(strategy);
         setComment(strategy.comment)
-        if(strategy.data)
-          setSnapshots([...strategy.data]);
+        if(strategy.snapshot)
+          setSnapshots([...strategy.snapshot]);
         if(strategy.area === 'full') {
           areaLink.current = '/half-background-rotated.svg'
         }
@@ -241,11 +241,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     const schema = {
       id: draw?.id ?? 0,
       name: draw?.name ?? '',
-      data: [snap],
-      area: draw?.area ?? '',
+      snapshot: [snap],
+      area: draw?.area ?? 'half',
       folder_id: draw?.folder_id ?? 1,
       comment: comment,
-    }
+    } as Draw
     updateDrawing(schema);
     setDraw(schema);
     drawings.length = 0;
@@ -385,8 +385,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           <Button clickHandler={()=>{updateDrawing({
               id: draw?.id ?? 0,
               name: draw?.name ?? '',
-              data: [...snapshots],
-              area: draw?.area ?? '',
+              snapshot: [...snapshots],
+              area: draw?.area ?? 'half',
               folder_id: draw?.folder_id ?? 1,
               comment: comment,
             })}} label='Сохранить' color='orange'/>
