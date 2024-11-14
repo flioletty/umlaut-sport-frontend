@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Group, Image, Text } from "react-konva"
 import { DraggableThingProps } from "../models/props.models"
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { Step, Moving } from "../models/moving.dto";
 import useImage from "use-image";
 import { EditableText } from "./editable-text";
@@ -18,7 +18,8 @@ export function DraggableBall({drawings, setDrawings, position, src, id, innerRe
 
     const toRelative = useCallback((steps : Moving[] | Moving) => { return toRelativeImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
     const toAbsolute = useCallback((steps : Moving[] | Moving) => { return toAbsoluteImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
-    
+    const playerRadius = useRef(windowWidth * 0.07)
+
     useEffect(()=>{setText(StartLabels.get(id) ?? '')}, [StartLabels.get(id), id])
     useEffect(()=>{
         if((innerRef?.current as Konva.Group)?.children.length<4)
@@ -94,9 +95,9 @@ export function DraggableBall({drawings, setDrawings, position, src, id, innerRe
                     addBall(e);
                 }}
             >
-            <Image alt='player' image={image}/>
-            <Text fontSize={32} x={25} y={21} text={id==='ball' ? '' : id.toString().at(-1)}/>
-            <EditableText x={15} y={75} text={text} onChange={(value : string) => {setText(value); StartLabels.set(id, value)}} disabled={disabled}/>
+            <Image width={playerRadius.current} height={playerRadius.current} alt='player' image={image}/>
+            <Text fontSize={playerRadius.current * 0.6} x={playerRadius.current*0.34} y={playerRadius.current*0.25} text={id==='ball' ? '' : id.toString().at(-1)}/>
+            <EditableText x={0} y={playerRadius.current} text={text} onChange={(value : string) => {setText(value); StartLabels.set(id, value)}} disabled={disabled}/>
         </Group>
     )
 }
