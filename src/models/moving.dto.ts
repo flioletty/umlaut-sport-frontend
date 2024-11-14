@@ -13,5 +13,5 @@ export interface Step {
 
 export interface Snapshot {
     snapnum: number;
-    steps: Step[];
+    step: Step[];
 }

@@ -14,8 +14,6 @@ import Link from 'next/link';
 import { prepare } from '../utils/bezier';
 import Image from 'next/image';
 import { Opponent } from './opponent';
-import { StartLabels } from '../models/start-labels';
-import TextareaAutosize from 'react-textarea-autosize';
 import { Group } from 'konva/lib/Group';
 import { SlideLine } from './slide-line';
 import { toAbsolute as toAbsoluteImlp } from '../utils/moving-convers';
@@ -32,6 +30,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const [lastBallCoord, setlastBallCoord] = useState({x:0, y:0} as Moving)
   const areaLink = React.useRef('/half-background-rotated-cropped-rotated.svg')
   const [slidesMax, setSlidesMax] = useState<number>(0);
+
+  console.log(currentSnapshot)
 
   const player1 = React.useRef( null );
   const player2 = React.useRef( null );
@@ -147,24 +147,23 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   function play(duration: number, maxSnap: number) {
     console.log(snapshots)
     let i = 0;
-    let first = true;
     setlastBallCoord({x:0, y:0} as Moving)
     setTimeout(function run() {
       if(i<maxSnap) {
         if(i===0){
-          for(const st of snapshots[i].steps)
+          for(const st of snapshots[i].step)
             applyStepAnimated(st, 0)
         }
         else {
           const mapa = new Map<string, Step[]>();
-          for(let a = 0; a<snapshots[i].steps.length; a++) {
-            const step = snapshots[i].steps[a];
+          for(let a = 0; a<snapshots[i].step.length; a++) {
+            const step = snapshots[i].step[a];
             const has = mapa.get(step.objectName);
             if(!step.hasBall && has) {
               mapa.set(step.objectName, has.concat(step))
             } else if(step.hasBall){
               const hb = mapa.get('hasBall');
-              let res: Step[] = [];
+              const res: Step[] = [];
               // if(!first && hb?.at(-1)?.objectName!==step.objectName){
               //   console.log(lastBallCoord)
               //   hb ? res.push({objectName: 'ball', label: '', steps: [{x: (step.steps.at(0)?.x ?? 0) - lastBallCoord.x, y: (step.steps.at(0)?.y ?? 0) - lastBallCoord.y} as Moving]} as Step) : res.push({objectName: 'ball', label: '', steps: [{x: step.steps.at(0)?.x ?? 0 - lastBallCoord.x, y: step.steps.at(0)?.y ?? 0 - lastBallCoord.y} as Moving]} as Step);
@@ -172,7 +171,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               // }
               setlastBallCoord(step.movings.at(-1) ?? lastBallCoord);
               res.push(step);
-              first=false;
               console.log('1')
               mapa.set('hasBall', hb ? hb!.concat(res) : [...res]);
             } else {
@@ -234,7 +232,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         hasBlock: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[4] instanceof Konva.Image || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Image,
       } as Step)
     }
-    const snap = {snapnum: 0, steps: res} as Snapshot;
+    const snap = {snapnum: 0, step: res} as Snapshot;
     const schema = {
       id: draw?.id ?? 0,
       name: draw?.name ?? '',
@@ -285,10 +283,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     if(snapshots.length === 0) {
       start();
     } else {
-      setSnapshots(snapshots.concat({snapnum: snapshots.length, steps: [...drawings]} as Snapshot));
+      setSnapshots(snapshots.concat({snapnum: snapshots.length, step: [...drawings]} as Snapshot));
       setDrawings([]);
     }
-    const newSnap = {snapnum: snapshots.length, steps: []} as Snapshot
+    const newSnap = {snapnum: snapshots.length, step: []} as Snapshot
     setCurrentSnapshot(newSnap);
     setSlidesMax(slidesMax+1); 
   }
@@ -300,9 +298,9 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     setSnapshots(snapshots);
     const newCurSnap = snapshots.at(-1);
     setCurrentSnapshot(newCurSnap);
-    setDrawings(newCurSnap?.steps ?? []);
+    setDrawings(newCurSnap?.step ?? []);
     if(last) {
-      for(const step of last.steps)
+      for(const step of last.step)
         applyStepAnimated(step, 100, true)
     }
   }
@@ -310,7 +308,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   function onCurrentSnapChange(num: number) {
     const newCurSnap = snapshots.at(num);
     setCurrentSnapshot(newCurSnap);
-    setDrawings(newCurSnap?.steps ?? []);
+    setDrawings(newCurSnap?.step ?? []);
     console.log(newCurSnap)
     play(100, num+1);
   }
@@ -349,7 +347,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
                 x: stage.current?.getPointerPosition()?.x,
                 y: stage.current?.getPointerPosition()?.y,
               } as Moving;
-              setOpponentsCoord(opponentsCoord.concat([{x: pos.x-50, y: pos.y-30} as Moving]));
+              setOpponentsCoord(opponentsCoord.concat([toRelative({x: pos.x-50, y: pos.y-30} as Moving) as Moving]));
+              console.log(pos)
             }}
             onDragOver={(e) => e.preventDefault()}
           >
@@ -374,7 +373,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               </Layer>
             </Stage>
           </div>
-          <div className='mt-6 mb-6 max-h-max'>
+          <div className='mt-6 mb-6'>
               <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange} slidesMax={slidesMax} />
           </div>
           {/* <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
