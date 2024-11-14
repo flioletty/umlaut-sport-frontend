@@ -10,7 +10,7 @@ export function createDrawing(name: string, folderId: number | string, area: str
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({name: name, folder_id: folder_id, area: 'half'})
+        body: JSON.stringify({name: name, folder_id: folder_id, area: area})
     })
     .then((result)=>result.json())
     .then((json)=>{
