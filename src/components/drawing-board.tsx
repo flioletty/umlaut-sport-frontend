@@ -18,6 +18,8 @@ import { Group } from 'konva/lib/Group';
 import { SlideLine } from './slide-line';
 import { toAbsolute as toAbsoluteImlp } from '../utils/moving-convers';
 import { toRelative as toRelativeImpl } from '../utils/moving-convers';
+import { Bounce, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -73,6 +75,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       const id = params.id;
       if (Number(id)) {
         const strategy = await getDrawingById(Number(id));
+        if(!strategy) 
+          return;
         setDraw(strategy);
         setComment(strategy.comment)
         if(strategy.snapshot)
@@ -317,6 +321,19 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
 
   return (
     <div className='p-8'>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+        />
       <div>
         <div className='flex flex-row width-max'>
           <Link href={{pathname: '/strategies'}} >

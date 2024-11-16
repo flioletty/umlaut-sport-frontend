@@ -13,6 +13,8 @@ import { LineSelect } from "@/src/components/line-select";
 import { useRouter } from "next/navigation";
 import { createFolder, getAllFolders } from "@/src/services/folder-service";
 import { Folder } from "@/src/models/folder.dto";
+import { Bounce, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 export default function About() {
@@ -30,6 +32,8 @@ export default function About() {
   useEffect(()=>{
     async function get() {
       const res = await getAllDrawing();
+      if(!res)
+        return;
       const folders = await getAllFolders();
       if(res.length)
         setDrawings([...res]);
@@ -43,7 +47,7 @@ export default function About() {
   async function onSave() {
     if (name.length > 2) {
       const strategy = await createDrawing(name, type, area);
-      router.push(`/strategies/${strategy.id}`)
+      router.push(`/strategies/${strategy?.id}`)
     }
   }
 
@@ -57,10 +61,23 @@ export default function About() {
 
     return (
       <div className="p-5">
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          transition={Bounce}
+        />
         <div className="text-3xl">Мои стратегии</div>
           {folders.map((folder) => 
             <div className="flex flex-col mt-5" key={folder.id}>
-              <div className="flex items-center">
+              <div className="flex items-center whitespace-nowrap">
                 <div className="mr-5 text-2xl">{folder.name}</div>
                 <Line></Line>
               </div>

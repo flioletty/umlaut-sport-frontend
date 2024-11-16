@@ -23,6 +23,7 @@
     "react-konva": "^18.2.10",
     "react-konva-utils": "^1.0.6",
     "react-textarea-autosize": "^8.5.4",
+    "react-toastify": "^10.0.6",
     "use-image": "^1.1.1"
   },
   "devDependencies": {
