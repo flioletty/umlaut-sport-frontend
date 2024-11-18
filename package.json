@@ -20,6 +20,7 @@
     "next": "14.2.15",
     "react": "^18",
     "react-dom": "^18",
+    "react-joyride": "^2.9.2",
     "react-konva": "^18.2.10",
     "react-konva-utils": "^1.0.6",
     "react-textarea-autosize": "^8.5.4",

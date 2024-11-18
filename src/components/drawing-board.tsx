@@ -20,6 +20,8 @@ import { toAbsolute as toAbsoluteImlp } from '../utils/moving-convers';
 import { toRelative as toRelativeImpl } from '../utils/moving-convers';
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Joyride, { ACTIONS, STATUS } from 'react-joyride';
+import { onbordingSteps } from "../models/start-labels";
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -32,6 +34,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const [lastBallCoord, setlastBallCoord] = useState({x:0, y:0} as Moving)
   const areaLink = React.useRef('/half-background-rotated-cropped-rotated.svg')
   const [slidesMax, setSlidesMax] = useState<number>(0);
+  const [runOnboarding, setRunOnboarding] = useState<boolean>(false);
 
   console.log(currentSnapshot)
 
@@ -321,6 +324,24 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
 
   return (
     <div className='p-8'>
+      <Joyride
+        run={runOnboarding}
+        locale={{ back: 'Назад', close: 'Закрыть', last: 'Последний', next: 'Далее', nextLabelWithProgress: 'Далее (Шаг {step} из {steps})', open: 'Открыть диалоговое окно', skip: 'Пропустить' }}
+        disableOverlayClose={true} 
+        showSkipButton={true} 
+        showProgress={true} 
+        continuous={true} 
+        callback={(data)=>{
+          if(data.status===STATUS.SKIPPED || data.status===STATUS.FINISHED || data.status===STATUS.ERROR)
+            setRunOnboarding(false);
+        }}
+        steps={onbordingSteps}
+        styles={{
+          options: {
+            primaryColor: '#ea580c',
+          },
+        }}
+      />
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -340,21 +361,23 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             <ButtonWithIcon handleClick={() => {}} color='grey' iconSrc='/back.svg' alt='back' width={40} height={40} className='m-2' label='К стратегиям'/>
           </Link>
           <div className='flex justify-center items-center text-3xl grow width-max'>
-          <input className='bg-transparent' maxLength={20} minLength={3}
-            value={draw?.name ?? ''} 
-            onChange={e => setDraw(draw==undefined ? undefined : {...draw, id: draw?.id ?? 0, name: e.target.value})} 
-          />
-        </div>
+            <input id='first' className='bg-transparent' maxLength={20} minLength={3}
+              value={draw?.name ?? ''} 
+              onChange={e => setDraw(draw==undefined ? undefined : {...draw, id: draw?.id ?? 0, name: e.target.value})} 
+            />
+          </div>
+          <div>
+            <Image className='cursor-pointer' onClick={()=>{setRunOnboarding(true)}} src={'/info.svg'} alt='info' width={20} height={20}/>
+          </div>
         </div>
         <div className='flex justify'>
           <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
-              <ButtonWithIcon handleClick={() => start()} iconSrc='/start.svg' alt='start' width={60} height={60} disabled={true}/>
-              <Image src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true}/>
-              <Image src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
-              <ButtonWithIcon handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length===0}/>
-              <ButtonWithIcon handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
-              <ButtonWithIcon handleClick={() => play(2000, snapshots.length)} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
-              <ButtonWithIcon handleClick={() => {setCommentVisible(!commentVisible); console.log(drawings.length);}} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
+              <Image id='seventh' src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true}/>
+              <Image id='eighth' src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
+              <ButtonWithIcon id='tenth' handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length===0}/>
+              <ButtonWithIcon id='eleventh' handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
+              <ButtonWithIcon id='thelth' handleClick={() => play(2000, snapshots.length)} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
+              <ButtonWithIcon id='second' handleClick={() => {setCommentVisible(!commentVisible); console.log(drawings.length);}} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
           </div>
           <div className='m-6 mx-10'
             onDrop={(e) => {

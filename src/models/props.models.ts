@@ -41,6 +41,7 @@ export interface ButtonWithIconProps {
     color?: ButtonColor;
     disabled?: boolean; 
     label?: string;
+    id?: string;
 }
 
 export interface StrategyProps {
