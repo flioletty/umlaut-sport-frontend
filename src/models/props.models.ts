@@ -90,4 +90,6 @@ export interface SlideLineProps {
     onMinus: ()=>void;
     onChangeCur: (num: number)=>void;
     slidesMax: number;
+    slidesCount: number;
+    setSlidesCount: React.Dispatch<React.SetStateAction<number>>;
 }

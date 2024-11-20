@@ -20,7 +20,7 @@ import { toAbsolute as toAbsoluteImlp } from '../utils/moving-convers';
 import { toRelative as toRelativeImpl } from '../utils/moving-convers';
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Joyride, { ACTIONS, STATUS } from 'react-joyride';
+import Joyride, { STATUS } from 'react-joyride';
 import { onbordingSteps } from "../models/start-labels";
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
@@ -35,8 +35,9 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const areaLink = React.useRef('/half-background-rotated-cropped-rotated.svg')
   const [slidesMax, setSlidesMax] = useState<number>(0);
   const [runOnboarding, setRunOnboarding] = useState<boolean>(false);
+  const [slidesCount, setSlidesCount] = useState<number>(1);
 
-  console.log(currentSnapshot)
+  console.log(currentSnapshot);
 
   const player1 = React.useRef( null );
   const player2 = React.useRef( null );
@@ -51,7 +52,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const ball = React.useRef( null );
   const layer = React.useRef( null );
   const stage = React.useRef<Konva.Stage>( null );
-  const fieldWidth = React.useRef<number>( window.innerWidth*0.75 - 150 )
+  const fieldWidth = React.useRef<number>( window.innerWidth*0.6 - 150 )
   const fieldHeight = React.useRef<number>( fieldWidth.current / 3 * 2 )
   const toAbsolute = useCallback(( movings : Moving | Moving[]) => toAbsoluteImlp(movings, fieldWidth.current, fieldHeight.current), [fieldWidth, fieldHeight]);
   const toRelative = useCallback((steps : Moving[] | Moving) => { return toRelativeImpl(steps, fieldWidth.current, fieldHeight.current); }, [fieldWidth, fieldHeight]);
@@ -81,9 +82,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         if(!strategy) 
           return;
         setDraw(strategy);
-        setComment(strategy.comment)
-        if(strategy.snapshot)
+        setComment(strategy.comment);
+        if(strategy.snapshot){
           setSnapshots([...strategy.snapshot]);
+          setSlidesCount([...strategy.snapshot].length);
+        }
         if(strategy.area === 'full') {
           areaLink.current = '/half-background-rotated.svg'
         }
@@ -112,20 +115,42 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   }
 
   function applyStepAnimated(step : Step, duration : number, backward : boolean = false) {
+    console.log(step)
     const movings = toAbsolute(step.movings) as Moving[]
-    if(step.hasBall) {
-      setTimeout(()=>{
-        const ball = mapObjects.get('ball')?.current!;      
-        ball._setAttr('x', 0);
-        ball._setAttr('y', 0);
-        (mapObjects.get(step.objectName)?.current! as Konva.Group).add(ball as Konva.Group);
-      }, 50)
-    }else{
-      if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[4] instanceof Konva.Group) {
-        (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(4, 1);
+    if(step.objectName==='ball') {
+      const parent = (mapObjects.get(step.objectName)?.current! as Konva.Node).getParent() as Konva.Group;
+      const node = (mapObjects.get(step.objectName)?.current! as Konva.Group);
+      if(parent.children[4] instanceof Konva.Group) {
+        console.log('removed1');
+        parent.children.splice(4, 1);
       }
-      else if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[3] instanceof Konva.Group) {
-          (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(3, 1);
+      else if(parent.children[3] instanceof Konva.Group) {
+          console.log('removed2');
+          parent.children.splice(3, 1);
+      }
+      node._setAttr('x', node.getAbsolutePosition().x)
+      node._setAttr('y', node.getAbsolutePosition().y)
+      parent.getLayer()?.add(node)
+      parent.getLayer()?.draw();
+      //(mapObjects.get(step.objectName)?.current! as Konva.Node).setZIndex(2)
+      console.log('djdjd', (mapObjects.get(step.objectName)?.current! as Konva.Node), parent, movings);
+      setTimeout(()=>(mapObjects.get(step.objectName)?.current! as Konva.Node).to({x: movings.at(0)?.x ?? 0, y: movings.at(0)?.y ?? 0, duration: 0.2}), 50)
+      return;
+    } else {
+      if(step.hasBall) {
+        setTimeout(()=>{
+          const ball = mapObjects.get('ball')?.current!;      
+          ball._setAttr('x', 0);
+          ball._setAttr('y', 0);
+          (mapObjects.get(step.objectName)?.current! as Konva.Group).add(ball as Konva.Group);
+        }, 50)
+      }else{
+        if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[4] instanceof Konva.Group) {
+          (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(4, 1);
+        }
+        else if((mapObjects.get(step.objectName)?.current! as Konva.Group).children[3] instanceof Konva.Group) {
+            (mapObjects.get(step.objectName)?.current! as Konva.Group).children.splice(3, 1);
+        }
       }
     }
 
@@ -154,6 +179,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   function play(duration: number, maxSnap: number) {
     console.log(snapshots)
     let i = 0;
+    setSlidesCount(1);
     setlastBallCoord({x:0, y:0} as Moving)
     setTimeout(function run() {
       if(i<maxSnap) {
@@ -162,6 +188,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             applyStepAnimated(st, 0)
         }
         else {
+          setSlidesCount(slidesCount+1);
           const mapa = new Map<string, Step[]>();
           for(let a = 0; a<snapshots[i].step.length; a++) {
             const step = snapshots[i].step[a];
@@ -171,14 +198,14 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             } else if(step.hasBall){
               const hb = mapa.get('hasBall');
               const res: Step[] = [];
-              // if(!first && hb?.at(-1)?.objectName!==step.objectName){
-              //   console.log(lastBallCoord)
-              //   hb ? res.push({objectName: 'ball', label: '', steps: [{x: (step.steps.at(0)?.x ?? 0) - lastBallCoord.x, y: (step.steps.at(0)?.y ?? 0) - lastBallCoord.y} as Moving]} as Step) : res.push({objectName: 'ball', label: '', steps: [{x: step.steps.at(0)?.x ?? 0 - lastBallCoord.x, y: step.steps.at(0)?.y ?? 0 - lastBallCoord.y} as Moving]} as Step);
-              //   console.log(res, lastBallCoord)
-              // }
+              if(hb?.at(-1)?.objectName!==step.objectName){
+                console.log(lastBallCoord)
+                res.push({objectName: 'ball', label: '', movings: [{x: step.movings.at(0)?.x, y: step.movings.at(0)?.y} as Moving]} as Step);
+                console.log(res, lastBallCoord)
+              }
               setlastBallCoord(step.movings.at(-1) ?? lastBallCoord);
               res.push(step);
-              console.log('1')
+              console.log('1', mapa)
               mapa.set('hasBall', hb ? hb!.concat(res) : [...res]);
             } else {
               mapa.set(step.objectName, [step])
@@ -248,7 +275,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       folder_id: draw?.folder_id ?? 1,
       comment: comment,
     } as Draw
-    updateDrawing(schema);
+    // updateDrawing(schema);
     setDraw(schema);
     drawings.length = 0;
     setDrawings(drawings);
@@ -370,7 +397,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             <Image className='cursor-pointer' onClick={()=>{setRunOnboarding(true)}} src={'/info.svg'} alt='info' width={20} height={20}/>
           </div>
         </div>
-        <div className='flex justify'>
+        <div className='flex justify justify-evenly'>
           <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
               <Image id='seventh' src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true}/>
               <Image id='eighth' src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
@@ -414,7 +441,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             </Stage>
           </div>
           <div className='mt-6 mb-6'>
-              <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange} slidesMax={slidesMax} />
+              <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange} slidesMax={slidesMax} slidesCount={slidesCount} setSlidesCount={setSlidesCount} />
           </div>
           {/* <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
             <TextareaAutosize minRows={3} placeholder='Введите свой комментарий' maxRows={20} className='bg-transparent border-orange-500' value={comment} onChange={(e)=>setComment(e.target.value)}></TextareaAutosize>

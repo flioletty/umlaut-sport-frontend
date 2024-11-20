@@ -1,11 +1,9 @@
 import Slider from "@mui/material/Slider";
 import { ButtonWithIcon } from "./button-with-icon";
-import { useState } from "react";
 import { SlideLineProps } from "../models/props.models";
 
-export function SlideLine({onPlus, onMinus, onChangeCur, slidesMax}: SlideLineProps) {
-    const [slidesCount, setSlidesCount] = useState<number>(1);
-
+export function SlideLine({onPlus, onMinus, onChangeCur, slidesMax, slidesCount, setSlidesCount}: SlideLineProps) {
+    console.log('count',slidesCount)
     return (
         <div className="flex flex-col h-5/6 justify-items-center gap-4 w-4/5 items-center">
             <ButtonWithIcon id='forth' handleClick={() => {onPlus(); setSlidesCount(slidesCount+1)}} iconSrc='/plus.svg' alt='plus' color='grey' width={53} height={53} disabled={false}/>
