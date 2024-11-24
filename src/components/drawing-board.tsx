@@ -37,7 +37,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const [runOnboarding, setRunOnboarding] = useState<boolean>(false);
   const [slidesCount, setSlidesCount] = useState<number>(1);
 
-  console.log(currentSnapshot);
+  // console.log(currentSnapshot);
 
   const player1 = React.useRef( null );
   const player2 = React.useRef( null );
@@ -85,7 +85,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         setComment(strategy.comment);
         if(strategy.snapshot){
           setSnapshots([...strategy.snapshot]);
-          setSlidesCount([...strategy.snapshot].length);
+          const slidesLen = [...strategy.snapshot].length
+          setSlidesMax(slidesLen)
+          setSlidesCount(slidesLen);
+          // snapshots are empty ¯\_(ツ)_/¯
+          // drawSnapshot(1)
         }
         if(strategy.area === 'full') {
           areaLink.current = '/half-background-rotated.svg'
@@ -96,6 +100,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   },[])
 
   function curvedMoveAnimation(node : Konva.Node, movings : Moving[], duration : number) {
+    if(duration === 0) {
+      node.x(movings.at(-1)?.x!)
+      node.y(movings.at(-1)?.y!)
+      return;
+    }
     const besier = prepare(movings.length);
     const x = movings.map(_ => _.x)
     const y = movings.map(_ => _.y)
@@ -115,17 +124,18 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   }
 
   function applyStepAnimated(step : Step, duration : number, backward : boolean = false) {
-    console.log(step)
+    // console.log(step)
     const movings = toAbsolute(step.movings) as Moving[]
+
     if(step.objectName==='ball') {
       const parent = (mapObjects.get(step.objectName)?.current! as Konva.Node).getParent() as Konva.Group;
       const node = (mapObjects.get(step.objectName)?.current! as Konva.Group);
       if(parent.children[4] instanceof Konva.Group) {
-        console.log('removed1');
+        // console.log('removed1');
         parent.children.splice(4, 1);
       }
       else if(parent.children[3] instanceof Konva.Group) {
-          console.log('removed2');
+          // console.log('removed2');
           parent.children.splice(3, 1);
       }
       node._setAttr('x', node.getAbsolutePosition().x)
@@ -133,8 +143,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       parent.getLayer()?.add(node)
       parent.getLayer()?.draw();
       //(mapObjects.get(step.objectName)?.current! as Konva.Node).setZIndex(2)
-      console.log('djdjd', (mapObjects.get(step.objectName)?.current! as Konva.Node), parent, movings);
-      setTimeout(()=>(mapObjects.get(step.objectName)?.current! as Konva.Node).to({x: movings.at(0)?.x ?? 0, y: movings.at(0)?.y ?? 0, duration: 0.2}), 50)
+      if (duration < 50) {
+        node.to({x: movings.at(0)?.x ?? 0, y: movings.at(0)?.y ?? 0, duration: 0})
+      } else {
+        setTimeout(()=>node.to({x: movings.at(0)?.x ?? 0, y: movings.at(0)?.y ?? 0, duration: (duration -50)/1000}), 50)
+      }
       return;
     } else {
       if(step.hasBall) {
@@ -176,43 +189,48 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     return curvedMoveAnimation(node, backward ? [...movings].reverse() : movings, duration);
   }
 
+  function getPerActorStepsMatrix(snapshot : Snapshot) {
+
+    const mapa = new Map<string, Step[]>();
+    for(const step of snapshot.step) {
+      const has = mapa.get(step.objectName);
+      if(!step.hasBall && has) {
+        mapa.set(step.objectName, has.concat(step))
+      } else if(step.hasBall){
+        const hb = mapa.get('hasBall');
+        const res: Step[] = [];
+        if(hb?.at(-1)?.objectName!==step.objectName){
+          // console.log(lastBallCoord)
+          res.push({objectName: 'ball', label: '', movings: [{x: step.movings.at(0)?.x, y: step.movings.at(0)?.y} as Moving]} as Step);
+          // console.log(res, lastBallCoord)
+        }
+        setlastBallCoord(step.movings.at(-1) ?? lastBallCoord);
+        res.push(step);
+        // console.log('1', mapa)
+        mapa.set('hasBall', hb ? hb!.concat(res) : [...res]);
+      } else {
+        mapa.set(step.objectName, [step])
+      }
+    }
+    // console.log(mapa)
+    return mapa.values().toArray();
+  }
+
   function play(duration: number, maxSnap: number) {
-    console.log(snapshots)
     let i = 0;
-    setSlidesCount(1);
+
     setlastBallCoord({x:0, y:0} as Moving)
     setTimeout(function run() {
       if(i<maxSnap) {
         if(i===0){
+          setSlidesCount(1);
           for(const st of snapshots[i].step)
             applyStepAnimated(st, 0)
         }
         else {
-          setSlidesCount(slidesCount+1);
-          const mapa = new Map<string, Step[]>();
-          for(let a = 0; a<snapshots[i].step.length; a++) {
-            const step = snapshots[i].step[a];
-            const has = mapa.get(step.objectName);
-            if(!step.hasBall && has) {
-              mapa.set(step.objectName, has.concat(step))
-            } else if(step.hasBall){
-              const hb = mapa.get('hasBall');
-              const res: Step[] = [];
-              if(hb?.at(-1)?.objectName!==step.objectName){
-                console.log(lastBallCoord)
-                res.push({objectName: 'ball', label: '', movings: [{x: step.movings.at(0)?.x, y: step.movings.at(0)?.y} as Moving]} as Step);
-                console.log(res, lastBallCoord)
-              }
-              setlastBallCoord(step.movings.at(-1) ?? lastBallCoord);
-              res.push(step);
-              console.log('1', mapa)
-              mapa.set('hasBall', hb ? hb!.concat(res) : [...res]);
-            } else {
-              mapa.set(step.objectName, [step])
-            }
-          }
-          console.log(mapa)
-          for(const obj of mapa.values().toArray()){
+          setSlidesCount(i+1);
+
+          for(const obj of getPerActorStepsMatrix(snapshots[i])){
             let k = 0;
             const time = duration / obj.length;
             setTimeout(function nextStep(){
@@ -228,6 +246,24 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         setTimeout(run, duration);
       }
     }, duration);
+  }
+
+  function drawSnapshot(index : number) {
+    const lastSteps = new Map<string, Step>();
+    let lastHaveBall = ""
+    for (let i = 0; i< index; i++) {
+      for ( const step of getPerActorStepsMatrix(snapshots[i]).flat())  {
+        if (step.hasBall)
+          lastHaveBall = step.objectName;
+        lastSteps.set(step.objectName, step)
+      }
+    }
+    console.log(lastSteps)
+    for (let step of lastSteps.values().toArray().flat()) {
+      if (step.hasBall && step.objectName !== lastHaveBall) 
+        step.hasBall = false;
+      applyStepAnimated(step, 0)
+    }
   }
 
   function undo() {
@@ -340,14 +376,14 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   }
 
   function onCurrentSnapChange(num: number) {
-    const newCurSnap = snapshots.at(num);
+    const newCurSnap = snapshots.at(num)!;
     setCurrentSnapshot(newCurSnap);
     setDrawings(newCurSnap?.step ?? []);
-    console.log(newCurSnap)
-    play(100, num+1);
+    // console.log(newCurSnap)
+    drawSnapshot(num + 1)
   }
 
-  console.log(drawings.length)
+  // console.log(drawings.length)
 
   return (
     <div className='p-8'>
@@ -415,7 +451,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
                 y: stage.current?.getPointerPosition()?.y,
               } as Moving;
               setOpponentsCoord(opponentsCoord.concat([toRelative({x: pos.x-50, y: pos.y-30} as Moving) as Moving]));
-              console.log(pos)
+              // console.log(pos)
             }}
             onDragOver={(e) => e.preventDefault()}
           >
