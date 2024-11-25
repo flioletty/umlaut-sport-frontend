@@ -124,25 +124,21 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   }
 
   function applyStepAnimated(step : Step, duration : number, backward : boolean = false) {
-    // console.log(step)
     const movings = toAbsolute(step.movings) as Moving[]
 
     if(step.objectName==='ball') {
       const parent = (mapObjects.get(step.objectName)?.current! as Konva.Node).getParent() as Konva.Group;
       const node = (mapObjects.get(step.objectName)?.current! as Konva.Group);
       if(parent.children[4] instanceof Konva.Group) {
-        // console.log('removed1');
         parent.children.splice(4, 1);
       }
       else if(parent.children[3] instanceof Konva.Group) {
-          // console.log('removed2');
           parent.children.splice(3, 1);
       }
       node._setAttr('x', node.getAbsolutePosition().x)
       node._setAttr('y', node.getAbsolutePosition().y)
       parent.getLayer()?.add(node)
       parent.getLayer()?.draw();
-      //(mapObjects.get(step.objectName)?.current! as Konva.Node).setZIndex(2)
       if (duration < 50) {
         node.to({x: movings.at(0)?.x ?? 0, y: movings.at(0)?.y ?? 0, duration: 0})
       } else {
@@ -200,19 +196,16 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         const hb = mapa.get('hasBall');
         const res: Step[] = [];
         if(hb?.at(-1)?.objectName!==step.objectName){
-          // console.log(lastBallCoord)
           res.push({objectName: 'ball', label: '', movings: [{x: step.movings.at(0)?.x, y: step.movings.at(0)?.y} as Moving]} as Step);
-          // console.log(res, lastBallCoord)
         }
         setlastBallCoord(step.movings.at(-1) ?? lastBallCoord);
         res.push(step);
-        // console.log('1', mapa)
         mapa.set('hasBall', hb ? hb!.concat(res) : [...res]);
       } else {
         mapa.set(step.objectName, [step])
       }
     }
-    // console.log(mapa)
+    console.log(mapa);
     return mapa.values().toArray();
   }
 
@@ -259,7 +252,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       }
     }
     console.log(lastSteps)
-    for (let step of lastSteps.values().toArray().flat()) {
+    const newLastSteps = [...lastSteps.values().toArray().flat()];
+    for (const step of newLastSteps) {
       if (step.hasBall && step.objectName !== lastHaveBall) 
         step.hasBall = false;
       applyStepAnimated(step, 0)

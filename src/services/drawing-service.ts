@@ -34,7 +34,6 @@ export function createDrawing(name: string, folderId: number | string, area: str
 
 
 export function updateDrawing(data: Draw) {
-  data.area = 'half'
     return fetch(backendUrl + 'draw', {
         method: 'PUT',
         mode: 'cors',
