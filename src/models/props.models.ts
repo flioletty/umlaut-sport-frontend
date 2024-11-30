@@ -43,6 +43,7 @@ export interface ButtonWithIconProps {
     disabled?: boolean; 
     label?: string;
     id?: string;
+    hint: string
 }
 
 export interface StrategyProps {
@@ -97,5 +98,6 @@ export interface SlideLineProps {
 
 export interface SmoothLineProps {
     points: Moving[];
-    radius: number;
+    offset: number;
+    innerRef : React.RefObject<Konva.Line>;
 }

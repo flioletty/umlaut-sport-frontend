@@ -6,7 +6,7 @@ export function SlideLine({onPlus, onMinus, onChangeCur, slidesMax, slidesCount,
     console.log('count',slidesCount)
     return (
         <div className="flex flex-col h-5/6 justify-items-center gap-4 w-4/5 items-center">
-            <ButtonWithIcon id='forth' handleClick={() => {onPlus(); setSlidesCount(slidesCount+1)}} iconSrc='/plus.svg' alt='plus' color='grey' width={53} height={53} disabled={false}/>
+            <ButtonWithIcon hint="Добавить слайд" id='forth' handleClick={() => {onPlus(); setSlidesCount(slidesCount+1)}} iconSrc='/plus.svg' alt='plus' color='grey' width={53} height={53} disabled={false}/>
             <Slider id='sixth'
                 style={{color:'rgb(251 146 60)'}}
                 aria-label="Temperature"
@@ -25,7 +25,7 @@ export function SlideLine({onPlus, onMinus, onChangeCur, slidesMax, slidesCount,
                     },
                   }}                
             />
-            <ButtonWithIcon id='fith' handleClick={() => {onMinus()}} iconSrc='/minus.svg' color='grey' alt='minus' width={53} height={53} disabled={false}/>
+            <ButtonWithIcon hint="Удалить слайд" id='fith' handleClick={() => {onMinus()}} iconSrc='/minus.svg' color='grey' alt='minus' width={53} height={53} disabled={false}/>
         </div>
     )
 }

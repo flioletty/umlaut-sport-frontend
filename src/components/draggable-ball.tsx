@@ -11,105 +11,115 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { toRelative as toRelativeImpl, toAbsolute as toAbsoluteImpl } from "../utils/moving-convers";
 import { SmoothLine } from "./smoothLine";
 
-export function DraggableBall({drawings, setDrawings, position, src, id, innerRef, additionFunc = () => {}, disabled, ballRef, block=false, draggable=true, windowHeight, windowWidth, layer} : DraggableThingProps) {
-    
+export function DraggableBall({ drawings, setDrawings, position, src, id, innerRef, additionFunc = () => { }, disabled, ballRef, block = false, draggable = true, windowHeight, windowWidth, layer }: DraggableThingProps) {
+
     const [steps, setSteps] = React.useState<Moving[]>([]);
     const [text, setText] = React.useState(StartLabels.get(id) ?? '');
     const [hasBall, setHasBall] = React.useState(false);
-    const [layerCur, setLayer] = React.useState<Konva.Layer>();
+    const trace = React.useRef<Konva.Line>(null)
 
-    const toRelative = useCallback((steps : Moving[] | Moving) => { return toRelativeImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
-    const toAbsolute = useCallback((steps : Moving[] | Moving) => { return toAbsoluteImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
+    const toRelative = useCallback((steps: Moving[] | Moving) => { return toRelativeImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
+    const toAbsolute = useCallback((steps: Moving[] | Moving) => { return toAbsoluteImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
     const playerRadius = useRef(windowWidth * 0.07)
 
-    useEffect(()=>{setText(StartLabels.get(id) ?? '')}, [StartLabels.get(id), id])
-    useEffect(()=>{
-        if((innerRef?.current as Konva.Group)?.children.length<4)
+    useEffect(() => { setText(StartLabels.get(id) ?? '') }, [StartLabels.get(id), id])
+    useEffect(() => {
+        if ((innerRef?.current as Konva.Group)?.children.length < 4)
             setHasBall(false)
-        console.log(hasBall, )
+        console.log(hasBall,)
     }, [(innerRef?.current as Konva.Group)?.children])
-  
+
     function getPositionFromStage(stage: any) {
         const circle = stage.getLayers()[0].findOne(`#${id}`)
-        return ({x: circle.attrs.x, y: circle.attrs.y} as Moving)
+        return ({ x: circle.attrs.x, y: circle.attrs.y } as Moving)
     }
 
-    function dragStart(e : KonvaEventObject<DragEvent>) {
+    function updateTrace() {
+        console.log("kal")
+        console.log(trace.current)
+        trace.current?.points(steps.flatMap(m => [m.x + playerRadius.current / 2, m.x + playerRadius.current / 2]))
+    }
+
+    function dragStart(e: KonvaEventObject<DragEvent>) {
         steps.length = 0
         setSteps(steps)
         const position = getPositionFromStage(e.target.getStage())
         setSteps(steps.concat(position))
-        const layer = new Konva.Layer();
-        e.target.getStage()?.add(layer)
-        setLayer(layer);
     }
 
-    function addBall(e : KonvaEventObject<MouseEvent>) {
-        if(innerRef && ballRef) {
+    function addBall(e: KonvaEventObject<Event>) {
+        if (innerRef && ballRef) {
             setHasBall(true);
             ballRef.current?._setAttr('x', 0);
             ballRef.current?._setAttr('y', 0);
             (innerRef?.current as Konva.Group).add(ballRef?.current as Konva.Group)
             const position = getPositionFromStage(e.target.getStage())
-            const step = {objectName: id, movings: [position], label: text, hasBall: true} as Step
+            const step = { objectName: id, movings: [position], label: text, hasBall: true } as Step
             setDrawings([...drawings.concat(step)])
         }
     }
 
     const [image] = useImage(src);
 
-    return(
-        <Group x={(toAbsolute(position) as Moving).x} y={(toAbsolute(position) as Moving).y} id={id}
-            name={text}
-            ref={innerRef}
+    function reduceSteps(movings: Moving[], every: number): Moving[] {
+        if (movings.length === 0) return movings;
+        const newArr = movings.filter((el, ind) => ind % every === 0);
+        if (movings.length % every !== 1) {
+            newArr.push(movings.at(-1)!);
+        }
+        return newArr;
+    }
+
+    return (
+        <Group>
+            <SmoothLine points={reduceSteps(steps, 10)} offset={playerRadius.current / 2} innerRef={trace} />
+            <Group x={(toAbsolute(position) as Moving).x} y={(toAbsolute(position) as Moving).y} id={id}
+                name={text}
+                ref={innerRef}
                 draggable={draggable}
                 onDragEnd={() => {
-                    const step = {objectName: id, movings: toRelative([...steps].filter((el, ind)=>ind%20===0)), label: text, hasBall: hasBall, hasBlock: false} as Step
-                    if((innerRef?.current as Konva.Group)?.children.length<4)
+                    const step = { objectName: id, movings: toRelative(reduceSteps(steps, 20)), label: text, hasBall: hasBall, hasBlock: false } as Step
+                    if ((innerRef?.current as Konva.Group)?.children.length < 4)
                         step.hasBall = false;
- 
+
                     drawings.push(step)
                     additionFunc();
-                    if(block) {
+                    if (block) {
                         Konva.Image.fromURL('/player-block.svg', (image) => {
                             (innerRef?.current as Konva.Group).add(image)
                         })
-                        const step1 = {objectName: id, movings: [steps.at(-1)], label: text, hasBall: hasBall, hasBlock: true} as Step
+                        const step1 = { objectName: id, movings: [steps.at(-1)], label: text, hasBall: hasBall, hasBlock: true } as Step
                         drawings.push(step1)
                     }
                     setDrawings([...drawings])
                     console.log(drawings)
-                }} 
-                onDragMove={ (e) => {
-                        const position = getPositionFromStage(e.target.getStage());
-                        setSteps(steps.concat(position));
-                        if(steps.length%40===0) {
-                            (layerCur as Konva.Layer).children.splice(0, (layerCur as Konva.Layer).children.length-2);
-                            (layerCur as Konva.Layer).add((SmoothLine({points: (steps.filter((el, ind)=>ind%40===0)) as Moving[], radius: playerRadius.current/2})) as Konva.Line)
-                        }
-                    }
-                } 
+                }}
+                onDragMove={(e) => {
+                    const position = getPositionFromStage(e.target.getStage());
+                    setSteps(steps.concat(position));
+                }}
                 onDragStart={(e) => {
                     dragStart(e);
-                    if(!block) {
-                        if((innerRef?.current as Konva.Group).children[4] instanceof Konva.Image) {
+                    if (!block) {
+                        if ((innerRef?.current as Konva.Group).children[4] instanceof Konva.Image) {
                             (innerRef?.current as Konva.Group).children.splice(4, 1);
                         }
-                        else if((innerRef?.current as Konva.Group).children[3] instanceof Konva.Image) {
+                        else if ((innerRef?.current as Konva.Group).children[3] instanceof Konva.Image) {
                             (innerRef?.current as Konva.Group).children.splice(3, 1);
                         }
                     }
                 }}
-                onDblTap={(e)=>{
+                onDblTap={(e) => {
                     addBall(e);
                 }}
-                onDblClick={(e)=>{
+                onDblClick={(e) => {
                     addBall(e);
                 }}
             >
-            <Image width={playerRadius.current} height={playerRadius.current} alt='player' image={image}/>
-            <Text fontSize={playerRadius.current * 0.6} x={playerRadius.current*0.34} y={playerRadius.current*0.25} text={id==='ball' ? '' : id.toString().at(-1)}/>
-            <EditableText x={playerRadius.current * ( 0.5 - text.length * 0.04)} y={playerRadius.current} text={text} onChange={(value : string) => {setText(value); StartLabels.set(id, value)}} disabled={disabled}/>
+                <Image width={playerRadius.current} height={playerRadius.current} alt='player' image={image} />
+                <Text fontSize={playerRadius.current * 0.6} x={playerRadius.current * 0.34} y={playerRadius.current * 0.25} text={id === 'ball' ? '' : id.toString().at(-1)} />
+                <EditableText x={playerRadius.current * (0.5 - text.length * 0.04)} y={playerRadius.current} text={text} onChange={(value: string) => { setText(value); StartLabels.set(id, value) }} disabled={disabled} />
+            </Group>
         </Group>
     )
 }
