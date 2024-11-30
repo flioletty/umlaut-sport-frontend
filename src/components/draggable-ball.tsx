@@ -9,12 +9,14 @@ import { StartLabels } from "../models/start-labels";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { toRelative as toRelativeImpl, toAbsolute as toAbsoluteImpl } from "../utils/moving-convers";
+import { SmoothLine } from "./smoothLine";
 
-export function DraggableBall({drawings, setDrawings, position, src, id, innerRef, additionFunc = () => {}, disabled, ballRef, block=false, draggable=true, windowHeight, windowWidth} : DraggableThingProps) {
+export function DraggableBall({drawings, setDrawings, position, src, id, innerRef, additionFunc = () => {}, disabled, ballRef, block=false, draggable=true, windowHeight, windowWidth, layer} : DraggableThingProps) {
     
     const [steps, setSteps] = React.useState<Moving[]>([]);
     const [text, setText] = React.useState(StartLabels.get(id) ?? '');
     const [hasBall, setHasBall] = React.useState(false);
+    const [layerCur, setLayer] = React.useState<Konva.Layer>();
 
     const toRelative = useCallback((steps : Moving[] | Moving) => { return toRelativeImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
     const toAbsolute = useCallback((steps : Moving[] | Moving) => { return toAbsoluteImpl(steps, windowWidth, windowHeight); }, [windowWidth, windowHeight]);
@@ -29,7 +31,7 @@ export function DraggableBall({drawings, setDrawings, position, src, id, innerRe
   
     function getPositionFromStage(stage: any) {
         const circle = stage.getLayers()[0].findOne(`#${id}`)
-        return toRelative({x: circle.attrs.x, y: circle.attrs.y} as Moving)
+        return ({x: circle.attrs.x, y: circle.attrs.y} as Moving)
     }
 
     function dragStart(e : KonvaEventObject<DragEvent>) {
@@ -37,6 +39,9 @@ export function DraggableBall({drawings, setDrawings, position, src, id, innerRe
         setSteps(steps)
         const position = getPositionFromStage(e.target.getStage())
         setSteps(steps.concat(position))
+        const layer = new Konva.Layer();
+        e.target.getStage()?.add(layer)
+        setLayer(layer);
     }
 
     function addBall(e : KonvaEventObject<MouseEvent>) {
@@ -59,7 +64,7 @@ export function DraggableBall({drawings, setDrawings, position, src, id, innerRe
             ref={innerRef}
                 draggable={draggable}
                 onDragEnd={() => {
-                    const step = {objectName: id, movings: [...steps].filter((el, ind)=>ind%8===0), label: text, hasBall: hasBall, hasBlock: false} as Step
+                    const step = {objectName: id, movings: toRelative([...steps].filter((el, ind)=>ind%20===0)), label: text, hasBall: hasBall, hasBlock: false} as Step
                     if((innerRef?.current as Konva.Group)?.children.length<4)
                         step.hasBall = false;
  
@@ -76,8 +81,12 @@ export function DraggableBall({drawings, setDrawings, position, src, id, innerRe
                     console.log(drawings)
                 }} 
                 onDragMove={ (e) => {
-                            const position = getPositionFromStage(e.target.getStage())
-                            setSteps(steps.concat(position))
+                        const position = getPositionFromStage(e.target.getStage());
+                        setSteps(steps.concat(position));
+                        if(steps.length%40===0) {
+                            (layerCur as Konva.Layer).children.splice(0, (layerCur as Konva.Layer).children.length-2);
+                            (layerCur as Konva.Layer).add((SmoothLine({points: (steps.filter((el, ind)=>ind%40===0)) as Moving[], radius: playerRadius.current/2})) as Konva.Line)
+                        }
                     }
                 } 
                 onDragStart={(e) => {
@@ -90,6 +99,9 @@ export function DraggableBall({drawings, setDrawings, position, src, id, innerRe
                             (innerRef?.current as Konva.Group).children.splice(3, 1);
                         }
                     }
+                }}
+                onDblTap={(e)=>{
+                    addBall(e);
                 }}
                 onDblClick={(e)=>{
                     addBall(e);

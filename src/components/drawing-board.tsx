@@ -22,6 +22,7 @@ import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Joyride, { STATUS } from 'react-joyride';
 import { onbordingSteps } from "../models/start-labels";
+import { SmoothLine } from './smoothLine';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -50,7 +51,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const opponent4 = React.useRef( null );
   const opponent5 = React.useRef( null );
   const ball = React.useRef( null );
-  const layer = React.useRef( null );
+  const layer = React.useRef<Konva.Layer>( null );
+  const layer1 = React.useRef<Konva.Layer>( null );
   const stage = React.useRef<Konva.Stage>( null );
   const fieldWidth = React.useRef<number>( window.innerWidth*0.6 - 150 )
   const fieldHeight = React.useRef<number>( fieldWidth.current / 3 * 2 )
@@ -282,6 +284,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     const str = stage.current?.getStage()?.toJSON();
     const figures = JSON.parse(str ?? '').children[0].children;
     const res : Step[] = [];
+    console.log(figures)
     for (const figure of figures) {
       res.push({
         label: figure.attrs.name,
@@ -296,21 +299,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         hasBlock: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[4] instanceof Konva.Image || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Image,
       } as Step)
     }
-    const snap = {snapnum: 0, step: res} as Snapshot;
-    const schema = {
-      id: draw?.id ?? 0,
-      name: draw?.name ?? '',
-      snapshot: [snap],
-      area: draw?.area ?? 'half',
-      folder_id: draw?.folder_id ?? 1,
-      comment: comment,
-    } as Draw
-    // updateDrawing(schema);
-    setDraw(schema);
-    drawings.length = 0;
-    setDrawings(drawings);
-    setSnapshots([snap]);
-    console.log(snap)
+    return res;
   }
 
   function clearDeleted() {
@@ -328,6 +317,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       }
       return (
         <Opponent 
+          layer={layer1}
           innerRef={(mapObjects.get(`opponent${ind+1}`) ?? null) as (MutableRefObject<Group> | null) } 
           id={`opponent${ind+1}`} 
           key={`opponent${ind+1}`} 
@@ -344,13 +334,18 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   })
 
   function onPlusClicked() {
-    if(snapshots.length === 0) {
-      start();
+    setSnapshots([...snapshots.slice(0, currentSnapshot?.snapnum)]);
+    const startSteps = start();
+    if(snapshots.length===0){
+      setSnapshots([{snapnum: 0, step: [...startSteps]} as Snapshot]);
     } else {
-      setSnapshots(snapshots.concat({snapnum: snapshots.length, step: [...drawings]} as Snapshot));
-      setDrawings([]);
+      if (currentSnapshot) {
+        currentSnapshot.step = [...currentSnapshot.step, ...drawings];
+        setSnapshots(snapshots.concat(currentSnapshot));
+      }
     }
-    const newSnap = {snapnum: snapshots.length, step: []} as Snapshot
+    setDrawings([]);
+    const newSnap = {snapnum: snapshots.length, step: [...startSteps]} as Snapshot
     setCurrentSnapshot(newSnap);
     setSlidesMax(slidesMax+1); 
   }
@@ -373,11 +368,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     const newCurSnap = snapshots.at(num)!;
     setCurrentSnapshot(newCurSnap);
     setDrawings(newCurSnap?.step ?? []);
-    // console.log(newCurSnap)
     drawSnapshot(num + 1)
   }
-
-  // console.log(drawings.length)
 
   return (
     <div className='p-8'>
@@ -445,7 +437,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
                 y: stage.current?.getPointerPosition()?.y,
               } as Moving;
               setOpponentsCoord(opponentsCoord.concat([toRelative({x: pos.x-50, y: pos.y-30} as Moving) as Moving]));
-              // console.log(pos)
             }}
             onDragOver={(e) => e.preventDefault()}
           >
@@ -460,14 +451,15 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               ref={stage}
             >
               <Layer ref={layer}>
-                <Player innerRef={player1} id={'player1'} position={{x:0.2, y:0.45} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
-                <Player innerRef={player2} id={'player2'} position={{x:0.3, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
-                <Player innerRef={player3} id={'player3'} position={{x:0.45, y:0.7} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
-                <Player innerRef={player4} id={'player4'} position={{x:0.6, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
-                <Player innerRef={player5} id={'player5'} position={{x:0.7, y:0.45} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Player layer={layer1} innerRef={player1} id={'player1'} position={{x:0.2, y:0.45} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Player layer={layer1} innerRef={player2} id={'player2'} position={{x:0.3, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Player layer={layer1} innerRef={player3} id={'player3'} position={{x:0.45, y:0.7} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Player layer={layer1} innerRef={player4} id={'player4'} position={{x:0.6, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Player layer={layer1} innerRef={player5} id={'player5'} position={{x:0.7, y:0.45} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
                 {opponents}
-                <Ball innerRef={ball} id={'ball'} position={{x:0.45, y:0.5} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true} ballRef={null} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
+                <Ball layer={layer1} innerRef={ball} id={'ball'} position={{x:0.45, y:0.5} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true} ballRef={null} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current}/>
               </Layer>
+              <Layer ref={layer1}></Layer>
             </Stage>
           </div>
           <div className='mt-6 mb-6'>

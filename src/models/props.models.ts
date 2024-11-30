@@ -20,6 +20,7 @@ export interface DraggableBallProps {
     block?: boolean;
     windowHeight : number;
     windowWidth : number;
+    layer: React.RefObject<Konva.Layer>
 }
 
 export interface ButtonProps {
@@ -92,4 +93,9 @@ export interface SlideLineProps {
     slidesMax: number;
     slidesCount: number;
     setSlidesCount: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export interface SmoothLineProps {
+    points: Moving[];
+    radius: number;
 }
