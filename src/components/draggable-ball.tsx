@@ -29,10 +29,22 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
         console.log(hasBall,)
     }, [(innerRef?.current as Konva.Group)?.children])
 
+    useEffect(()=>{
+        console.log('aboba', trace)
+        if(drawings.filter((draw)=>draw.objectName===id).length===0) {
+            steps.length = 0
+            setSteps(steps);
+            trace.current?.points([]);
+            console.log('aboba2')
+        }
+    }, [drawings.filter((draw)=>draw.objectName===id).length])
+
     function getPositionFromStage(stage: any) {
         const circle = stage.getLayers()[0].findOne(`#${id}`)
         return ({ x: circle.attrs.x, y: circle.attrs.y } as Moving)
     }
+
+    console.log('drawings', ...drawings)
 
     function updateTrace() {
         console.log("kal")
@@ -54,7 +66,7 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
             ballRef.current?._setAttr('y', 0);
             (innerRef?.current as Konva.Group).add(ballRef?.current as Konva.Group)
             const position = getPositionFromStage(e.target.getStage())
-            const step = { objectName: id, movings: [position], label: text, hasBall: true } as Step
+            const step = { objectName: id, movings: [toRelative(position)], label: text, hasBall: true } as Step
             setDrawings([...drawings.concat(step)])
         }
     }
@@ -72,11 +84,15 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
 
     return (
         <Group>
-            <SmoothLine points={reduceSteps(steps, 10)} offset={playerRadius.current / 2} innerRef={trace} />
+            <SmoothLine points={reduceSteps(steps, 25)} offset={playerRadius.current / 2} innerRef={trace} />
             <Group x={(toAbsolute(position) as Moving).x} y={(toAbsolute(position) as Moving).y} id={id}
                 name={text}
                 ref={innerRef}
-                draggable={draggable}
+                onMouseMove={()=>{
+                    if(drawings.filter((draw)=>draw.objectName===id).length!==0)
+                        document.getElementById("forth")?.focus();
+                }}
+                draggable={draggable && (drawings.filter((draw)=>draw.objectName===id).length===0)}
                 onDragEnd={() => {
                     const step = { objectName: id, movings: toRelative(reduceSteps(steps, 20)), label: text, hasBall: hasBall, hasBlock: false } as Step
                     if ((innerRef?.current as Konva.Group)?.children.length < 4)

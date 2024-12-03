@@ -200,19 +200,23 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     const figures = JSON.parse(str ?? '').children[0].children;
     const res : Step[] = [];
     console.log(figures)
-    for (const figure of figures) {
-      res.push({
-        label: figure.attrs.name,
-        objectName: figure.attrs.id,
-        movings : toRelative([
-          {
-            x: figure.attrs.x,
-            y: figure.attrs.y
-          }
-        ] as Moving[]),
-        hasBall: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[4] instanceof Konva.Group || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Group,
-        hasBlock: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[4] instanceof Konva.Image || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Image,
-      } as Step)
+    for (const fig of figures) {
+      const figure = fig.children[1];
+      if(figure) {
+        console.log(figure)
+        res.push({
+          label: figure.attrs.name,
+          objectName: figure.attrs.id,
+          movings : toRelative([
+            {
+              x: figure.attrs.x,
+              y: figure.attrs.y
+            }
+          ] as Moving[]),
+          hasBall: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group)?.children?.at(4) instanceof Konva.Group || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Group,
+          hasBlock: (mapObjects.get(figure.attrs.id)?.current! as Konva.Group)?.children?.at(4) instanceof Konva.Image || (mapObjects.get(figure.attrs.id)?.current! as Konva.Group).children[3] instanceof Konva.Image,
+        } as Step)
+      }
     }
     return res;
   }
@@ -336,7 +340,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         </div>
         <div className='flex justify justify-evenly'>
           <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
-              <Image id='seventh' src='/opponent.svg' alt='opponent' width={60} height={60} draggable={true}/>
+              <Image id='seventh' src='/opponent.svg' alt='opponent' width={60} height={60} draggable={snapshots.length===0}/>
               <Image title='Блок' id='eighth' src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
               <ButtonWithIcon hint={'Отменить действие'} id='tenth' handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length===0}/>
               <ButtonWithIcon hint={'Вернуть действие'} id='eleventh' handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
