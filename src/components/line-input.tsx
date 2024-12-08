@@ -1,6 +1,6 @@
 import { ButtonColor, LineInputProps } from "../models/props.models"
 
-export function LineInput({label, color='white', onChange, value}: LineInputProps) {
+export function LineInput({label, color='white', onChange, value, type}: LineInputProps) {
     const colorMap = new Map<ButtonColor, string>([
         ['white', 'text-white border-b-stone-100'],
         ['orange', 'text-orange-400 border-b-orange-400'],
@@ -11,6 +11,7 @@ export function LineInput({label, color='white', onChange, value}: LineInputProp
         <div>
             <span className={'border-none mr-3 ' + colorMap.get(color)}>{label}:</span>
             <input 
+                type={type}
                 value={value} 
                 required 
                 minLength={3} 

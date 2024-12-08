@@ -24,6 +24,7 @@ import Joyride, { STATUS } from 'react-joyride';
 import { onbordingSteps } from "../models/start-labels";
 import { SmoothLine } from './smoothLine';
 import { applyStepAnimated } from '../utils/animation';
+import { TextareaAutosize } from '@mui/material';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -313,7 +314,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       <ToastContainer
         position="top-right"
         autoClose={5000}
-        hideProgressBar={false}
+        hideProgressBar={true}
         newestOnTop
         closeOnClick
         rtl={false}
@@ -345,7 +346,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               <ButtonWithIcon hint={'Отменить действие'} id='tenth' handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length===0}/>
               <ButtonWithIcon hint={'Вернуть действие'} id='eleventh' handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
               <ButtonWithIcon hint={'Воспроизвести'} id='thelth' handleClick={() => play(2000, snapshots.length)} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
-              <ButtonWithIcon hint={'Добавить комментарий'} id='second' handleClick={() => {setCommentVisible(!commentVisible); console.log(drawings.length);}} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/>
+              {/* <ButtonWithIcon hint={'Добавить комментарий'} id='second' handleClick={() => {setCommentVisible(!commentVisible); console.log(drawings.length);}} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/> */}
           </div>
           <div className='m-6 mx-10'
             onDrop={(e) => {
@@ -384,9 +385,9 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           <div className='mt-6 mb-6'>
               <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange} slidesMax={slidesMax} slidesCount={slidesCount} setSlidesCount={setSlidesCount} />
           </div>
-          {/* <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
+          <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
             <TextareaAutosize minRows={3} placeholder='Введите свой комментарий' maxRows={20} className='bg-transparent border-orange-500' value={comment} onChange={(e)=>setComment(e.target.value)}></TextareaAutosize>
-          </div> */}
+          </div>
         </div>
         <div className='flex items-center justify-end'>
           <Button clickHandler={()=>{updateDrawing({

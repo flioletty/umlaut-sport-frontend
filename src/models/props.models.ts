@@ -61,6 +61,7 @@ export interface LineInputProps {
     label: string;
     onChange: React.Dispatch<React.SetStateAction<string>>;
     value: string;
+    type?: string;
 }
 
 export interface EditableTextProps {

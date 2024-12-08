@@ -21,7 +21,7 @@ export function createDrawing(name: string, folderId: number | string, area: str
       toast.error('Произошла ошибка на нашей стороне. Повторите попытку позже', {
         position: "top-right",
         autoClose: 5000,
-        hideProgressBar: false,
+        hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
@@ -46,7 +46,7 @@ export function updateDrawing(data: Draw) {
       toast.success('Успешно сохранено!', {
         position: "top-right",
         autoClose: 5000,
-        hideProgressBar: false,
+        hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
@@ -58,7 +58,7 @@ export function updateDrawing(data: Draw) {
       toast.error('Произошла ошибка на нашей стороне. Повторите попытку позже', {
         position: "top-right",
         autoClose: 5000,
-        hideProgressBar: false,
+        hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
@@ -84,7 +84,7 @@ export function getDrawingById(id: number) {
       toast.error('Произошла ошибка на нашей стороне. Повторите попытку позже', {
         position: "top-right",
         autoClose: 5000,
-        hideProgressBar: false,
+        hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
@@ -111,7 +111,7 @@ export function getAllDrawing() {
       toast.error('Произошла ошибка на нашей стороне. Повторите попытку позже', {
         position: "top-right",
         autoClose: 5000,
-        hideProgressBar: false,
+        hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
