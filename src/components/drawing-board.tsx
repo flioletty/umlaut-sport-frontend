@@ -33,7 +33,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const [commentVisible, setCommentVisible] = useState<boolean>(false);
   const [comment, setComment] = useState<string>('');
   const [lastBallCoord, setlastBallCoord] = useState({x:0, y:0} as Moving)
-  const areaLink = React.useRef('/half-background-rotated-cropped-rotated.svg')
+  const areaLink = React.useRef('/half-background-new.svg')
   const [slidesMax, setSlidesMax] = useState<number>(0);
   const [runOnboarding, setRunOnboarding] = useState<boolean>(false);
   const [slidesCount, setSlidesCount] = useState<number>(1);
@@ -95,7 +95,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           // drawSnapshot(1)
         }
         if(strategy.area === 'full') {
-          areaLink.current = '/half-background-rotated.svg'
+          areaLink.current = '/full-background-new.svg'
         }
       }
     }
@@ -227,6 +227,8 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     setDrawBlock(false)
   }
 
+  const showTrace = snapshots.length!==0;
+
   const opponents = opponentsCoord.map((coord, ind) => {
     if(opponentsCoord.length <= 5){
       const opponent = drawings.findLast((val)=>val.objectName === `opponent${ind+1}`);
@@ -248,7 +250,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           ballRef={ball as unknown as (React.MutableRefObject<Konva.Node> | null)}
           windowHeight={fieldHeight.current} 
           windowWidth={fieldWidth.current}
-          showTrace={true}/>
+          showTrace={showTrace}/>
       )
     }
   })
@@ -372,11 +374,11 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               ref={stage}
             >
               <Layer ref={layer}>
-                <Player layer={layer1} innerRef={player1} id={'player1'} position={{x:0.2, y:0.45} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={true}/>
-                <Player layer={layer1} innerRef={player2} id={'player2'} position={{x:0.3, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={true}/>
-                <Player layer={layer1} innerRef={player3} id={'player3'} position={{x:0.45, y:0.7} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={true}/>
-                <Player layer={layer1} innerRef={player4} id={'player4'} position={{x:0.6, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={true}/>
-                <Player layer={layer1} innerRef={player5} id={'player5'} position={{x:0.7, y:0.45} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={true}/>
+                <Player layer={layer1} innerRef={player1} id={'player1'} position={{x:0.2, y:0.45} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={showTrace}/>
+                <Player layer={layer1} innerRef={player2} id={'player2'} position={{x:0.3, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={showTrace}/>
+                <Player layer={layer1} innerRef={player3} id={'player3'} position={{x:0.45, y:0.7} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={showTrace}/>
+                <Player layer={layer1} innerRef={player4} id={'player4'} position={{x:0.6, y:0.6} as Moving}  drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={showTrace}/>
+                <Player layer={layer1} innerRef={player5} id={'player5'} position={{x:0.7, y:0.45} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={false} ballRef={ball} block={drawBlock} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={showTrace}/>
                 {opponents}
                 <Ball layer={layer1} innerRef={ball} id={'ball'} position={{x:0.45, y:0.5} as Moving} drawings={drawings} setDrawings={setDrawings} additionFunc={()=>clearDeleted()} disabled={true} ballRef={null} windowHeight={fieldHeight.current} windowWidth={fieldWidth.current} showTrace={false}/>
               </Layer>
