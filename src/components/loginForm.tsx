@@ -5,7 +5,6 @@ import { Button } from "./button";
 import { LineInput } from "./line-input";
 import { login } from "../services/auth-service";
 import { useRouter } from "next/navigation";
-import { main } from "framer-motion/client";
 
 export function LoginForm() {
     const [email, setMail] = useState('');

@@ -3,7 +3,7 @@ import { SmoothLineProps } from '../models/props.models';
 import { FC } from 'react';
 
 
-export const SmoothLine : FC<SmoothLineProps> = ({ points, offset, innerRef, visible = true }) => {
+export const SmoothLine : FC<SmoothLineProps> = ({ points, offset, innerRef, visible }) => {
   return (
     <Line
       points = {[...points.flatMap(p => [p.x+offset, p.y+offset])]}

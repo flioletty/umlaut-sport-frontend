@@ -11,7 +11,7 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { toRelative as toRelativeImpl, toAbsolute as toAbsoluteImpl } from "../utils/moving-convers";
 import { SmoothLine } from "./smoothLine";
 
-export function DraggableBall({ drawings, setDrawings, position, src, id, innerRef, additionFunc = () => { }, disabled, ballRef, block = false, draggable = true, windowHeight, windowWidth, layer }: DraggableThingProps) {
+export function DraggableBall({ drawings, setDrawings, position, src, id, innerRef, additionFunc = () => { }, disabled, ballRef, block = false, draggable = true, windowHeight, windowWidth, showTrace = true }: DraggableThingProps) {
 
     const [steps, setSteps] = React.useState<Moving[]>([]);
     const [text, setText] = React.useState(StartLabels.get(id) ?? '');
@@ -76,7 +76,7 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
 
     return (
         <Group>
-            <SmoothLine points={reduceSteps(steps, 25)} offset={playerRadius.current / 2} innerRef={trace}/>
+            <SmoothLine points={reduceSteps(steps, 25)} offset={playerRadius.current / 2} innerRef={trace} visible={showTrace}/>
             <Group x={(toAbsolute(position) as Moving).x} y={(toAbsolute(position) as Moving).y} id={id}
                 name={text}
                 ref={innerRef}
