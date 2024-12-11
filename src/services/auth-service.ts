@@ -9,7 +9,8 @@ export function register(name: string, email: string, password: string) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({username: name, email: email, password: password})
+        body: JSON.stringify({username: name, email: email, password: password}),
+        credentials: 'include'
     })
     .then((result)=>result.json())
     .then((json)=>{
@@ -37,7 +38,8 @@ export function login(email: string, password: string) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({email: email, password: password})
+        body: JSON.stringify({email: email, password: password}),
+        credentials: 'include'
     })
     .then((result)=>result.json())
     .then((json)=>{

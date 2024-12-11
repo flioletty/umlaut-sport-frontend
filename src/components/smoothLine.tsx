@@ -1,9 +1,9 @@
 import { Line } from 'react-konva';
 import { SmoothLineProps } from '../models/props.models';
+import { FC } from 'react';
 
 
-export const SmoothLine = ({points, offset, innerRef} : SmoothLineProps) =>  {
-  console.log(points)
+export const SmoothLine : FC<SmoothLineProps> = ({ points, offset, innerRef, visible = true }) => {
   return (
     <Line
       points = {[...points.flatMap(p => [p.x+offset, p.y+offset])]}
@@ -14,6 +14,7 @@ export const SmoothLine = ({points, offset, innerRef} : SmoothLineProps) =>  {
       lineCap = {"round"}
       lineJoin = {"round"}
       bezier = {true}
+      visible = {visible}
     />
   );
 };

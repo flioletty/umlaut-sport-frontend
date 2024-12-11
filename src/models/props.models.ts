@@ -100,5 +100,6 @@ export interface SlideLineProps {
 export interface SmoothLineProps {
     points: Moving[];
     offset: number;
-    innerRef : React.RefObject<Konva.Line>;
+    innerRef: React.RefObject<Konva.Line>;
+    visible: boolean; 
 }

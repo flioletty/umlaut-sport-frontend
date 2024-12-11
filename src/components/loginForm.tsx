@@ -5,6 +5,7 @@ import { Button } from "./button";
 import { LineInput } from "./line-input";
 import { login } from "../services/auth-service";
 import { useRouter } from "next/navigation";
+import { main } from "framer-motion/client";
 
 export function LoginForm() {
     const [email, setMail] = useState('');
@@ -23,7 +24,7 @@ export function LoginForm() {
                     <LineInput color='white' label="Пароль" type='password' onChange={(val)=>{setPassword(val)}} value={password}></LineInput>
                 </div>
                 <div className="flex items-center">
-                    <Button label='Зарегистрироваться' clickHandler={()=>{login(email, password); router.push('/strategies')}} color='orange'/>
+                    <Button label='Войти' clickHandler={()=>{console.log(email, password); login(email, password); router.push('/strategies')}} color='orange'/>
                 </div>
             </div>
             <div className="w-3/5" 

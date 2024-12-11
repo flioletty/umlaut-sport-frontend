@@ -8,6 +8,7 @@ export function getAllFolders() {
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include'
     }).then((result)=>result.json()
     .then((json)=>{
       return json as Folder[];
@@ -22,7 +23,8 @@ export function createFolder(name: string) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({name: name})
+        body: JSON.stringify({name: name}),
+        credentials: 'include'
     })
     .then((result)=>result.json())
     .then((json)=>{

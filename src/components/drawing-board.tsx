@@ -25,6 +25,7 @@ import { onbordingSteps } from "../models/start-labels";
 import { SmoothLine } from './smoothLine';
 import { applyStepAnimated } from '../utils/animation';
 import { TextareaAutosize } from '@mui/material';
+import { tr } from 'framer-motion/client';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -295,10 +296,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     <div className='p-8'>
       <Joyride
         run={runOnboarding}
-        locale={{ back: 'Назад', close: 'Закрыть', last: 'Последний', next: 'Далее', nextLabelWithProgress: 'Далее (Шаг {step} из {steps})', open: 'Открыть диалоговое окно', skip: 'Пропустить' }}
+        locale={{ back: 'Назад', close: 'Закрыть', last: 'Все понятно', next: 'Далее', nextLabelWithProgress: 'Далее (Шаг {step} из {steps})', open: 'Открыть диалоговое окно', skip: 'Пропустить' }}
         disableOverlayClose={true} 
-        showSkipButton={true} 
-        showProgress={true} 
+        showSkipButton={true}
+        showProgress={true}
         continuous={true} 
         callback={(data)=>{
           if(data.status===STATUS.SKIPPED || data.status===STATUS.FINISHED || data.status===STATUS.ERROR)
@@ -335,8 +336,9 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               onChange={e => setDraw(draw==undefined ? undefined : {...draw, id: draw?.id ?? 0, name: e.target.value})} 
             />
           </div>
-          <div>
-            <Image className='cursor-pointer' onClick={()=>{setRunOnboarding(true)}} src={'/info.svg'} alt='info' width={20} height={20}/>
+          <div className='flex items-center'>
+            <Image className='cursor-pointer m-1' onClick={()=>{setRunOnboarding(true)}} src={'/info.svg'} alt='info' width={20} height={20}/>
+            Обучение
           </div>
         </div>
         <div className='flex justify justify-evenly'>

@@ -11,7 +11,8 @@ export function createDrawing(name: string, folderId: number | string, area: str
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({name: name, folder_id: folder_id, area: area})
+        body: JSON.stringify({name: name, folder_id: folder_id, area: area}),
+        credentials: 'include'
     })
     .then((result)=>result.json())
     .then((json)=>{
@@ -40,7 +41,8 @@ export function updateDrawing(data: Draw) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
+        credentials: 'include'
     })
     .then(()=>{
       toast.success('Успешно сохранено!', {
@@ -75,6 +77,7 @@ export function getDrawingById(id: number) {
       headers: {
         'Content-Type': 'application/json'
       },
+      credentials: 'include'
     })
     .then((result)=>result.json())
     .then((json)=>{
@@ -102,6 +105,7 @@ export function getAllDrawing() {
       headers: {
         'Content-Type': 'application/json'
       },
+      credentials: 'include'
   })
     .then((result)=>result.json()
     .then((json)=>{

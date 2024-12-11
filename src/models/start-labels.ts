@@ -15,6 +15,7 @@ export const onbordingSteps = [
     {
         target: '#first',
         content: 'Здесь можно поменять название',
+        disableBeacon: true,
     },
     {
         target: '#second',

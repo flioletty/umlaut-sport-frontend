@@ -44,14 +44,6 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
         return ({ x: circle.attrs.x, y: circle.attrs.y } as Moving)
     }
 
-    console.log('drawings', ...drawings)
-
-    function updateTrace() {
-        console.log("kal")
-        console.log(trace.current)
-        trace.current?.points(steps.flatMap(m => [m.x + playerRadius.current / 2, m.x + playerRadius.current / 2]))
-    }
-
     function dragStart(e: KonvaEventObject<DragEvent>) {
         steps.length = 0
         setSteps(steps)
@@ -84,7 +76,7 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
 
     return (
         <Group>
-            <SmoothLine points={reduceSteps(steps, 25)} offset={playerRadius.current / 2} innerRef={trace} />
+            <SmoothLine points={reduceSteps(steps, 25)} offset={playerRadius.current / 2} innerRef={trace}/>
             <Group x={(toAbsolute(position) as Moving).x} y={(toAbsolute(position) as Moving).y} id={id}
                 name={text}
                 ref={innerRef}
