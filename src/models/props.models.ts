@@ -63,6 +63,7 @@ export interface LineInputProps {
     onChange: React.Dispatch<React.SetStateAction<string>>;
     value: string;
     type?: string;
+    pattern?: string;
 }
 
 export interface EditableTextProps {

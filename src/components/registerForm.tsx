@@ -13,6 +13,21 @@ export function RegisterForm() {
 
     const router = useRouter()
 
+    function validate() {
+        console.log(name, email, password);
+        if (name.length < 3)
+            return "Имя должно быть не менее 3 символов";
+        else if (/[A-Za-zА-Яа-я0-9 ]*/.test(name) == false)
+            return "Имя должно состоять только из букв и цифр";
+        else if (email.length < 3)
+            return "Почта должна быть не менее 3 символов";
+        else if (/[A-Za-z@.0-9 ]*/.test(email) == false)
+            return "Почта должна состоять только из латинских букв, цифр и символов @ и .";
+        else if (password.length < 3)
+            return "Пароль должен быть не менее 3 символов";
+        return "ok"
+    }
+
     return (
         <div className="flex fixed w-3/4 top-1/4 left-1/4">
             <div className="w-2/5" 
@@ -25,12 +40,13 @@ export function RegisterForm() {
                     Регистрация
                 </div>
                 <div className="flex items-start flex-col gap-9">
-                    <LineInput color='white' label="Имя" onChange={(val)=>{setName(val)}} value={name}></LineInput>
-                    <LineInput color='white' label="Почта" type='email' onChange={(val)=>{setMail(val)}} value={email}></LineInput>
+                    <LineInput color='white' label="Имя" onChange={(val)=>{setName(val)}} value={name} pattern="[A-Za-zА-Яа-я0-9 ]*"></LineInput>
+                    <LineInput color='white' label="Почта" type='email' onChange={(val)=>{setMail(val)}} value={email} pattern="[A-Za-z@.0-9 ]*"></LineInput>
                     <LineInput color='white' label="Пароль" type='password' onChange={(val)=>{setPassword(val)}} value={password}></LineInput>
                 </div>
-                <div className="flex items-center">
-                    <Button label='Войти' clickHandler={()=>{register(name, email, password); router.push('/strategies')}} color='orange'/>
+                <div className="flex flex-col items-center">
+                    {validate()!=='ok' && <div className="text-red-500 text-xs">{validate()}</div>}
+                    <Button disabled={validate()!=='ok'} label='Зарегистрироваться' clickHandler={()=>{register(name, email, password); router.push('/strategies')}} color='orange'/>
                 </div>
             </div>
         </div>
