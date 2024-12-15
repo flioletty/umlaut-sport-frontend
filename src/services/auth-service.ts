@@ -1,8 +1,9 @@
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { User } from "../models/user.dto";
 import { backendUrl } from "./drawing-service";
 import { toast } from 'react-toastify';
 
-export function register(name: string, email: string, password: string) {
+export function register(name: string, email: string, password: string, router: AppRouterInstance) {
     return fetch(backendUrl + 'auth/register', {
         method: 'POST',
         mode: 'cors',
@@ -14,7 +15,8 @@ export function register(name: string, email: string, password: string) {
     })
     .then((data)=> {
       if(data.status === 400) {
-        toast.error('Проверьте входные данные или зарегистрируйтесь, если еще этого не сделали', {
+        router.push('/login')
+        toast.error('Аккаунт с такой почтой уже существует, войдите', {
           position: "top-right",
           autoClose: 5000,
           hideProgressBar: true,

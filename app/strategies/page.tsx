@@ -11,10 +11,11 @@ import { Line } from "@/src/components/line";
 import { LineInput } from "@/src/components/line-input";
 import { LineSelect } from "@/src/components/line-select";
 import { useRouter } from "next/navigation";
-import { createFolder, getAllFolders } from "@/src/services/folder-service";
+import { createFolder, getAllFolders, shareFolder } from "@/src/services/folder-service";
 import { Folder } from "@/src/models/folder.dto";
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Image from 'next/image';
 
 
 export default function About() {
@@ -22,10 +23,13 @@ export default function About() {
   const [folders, setFolders] = useState<Folder[]>([]);
   const {isOpen, onOpen, onOpenChange} = useDisclosure();
   const {isOpen: isNewFolderOpen, onOpen: onNewFolderOpen, onOpenChange: onNewFolderOpenChange} = useDisclosure();
+  const {isOpen: isSharingOpen, onOpen: onSharingOpen, onOpenChange: onSharingOpenChange} = useDisclosure();
+  const [sharedName, setSharedName] = useState<string>('');
   const [name, setName] = useState<string>('Новая стратегия');
   const [area, setArea] = useState<string | number>('full');
   const [type, setType] = useState<number | string>(1);
   const [folderName, setFolderName] = useState<string>('Новая папка');
+  const [sharedFolder, setSharedFolder] = useState<number>(0);
 
   const router = useRouter()
 
@@ -49,6 +53,10 @@ export default function About() {
       const strategy = await createDrawing(name, type, area, router);
       router.push(`/strategies/${strategy?.id}`)
     }
+  }
+
+  function share() {
+    shareFolder(sharedName, sharedFolder, router);
   }
 
   async function saveFolder() {
@@ -78,15 +86,23 @@ export default function About() {
           {folders.map((folder) => 
             <div className="flex flex-col mt-5" key={folder.id}>
               <div className="flex items-center whitespace-nowrap">
-                <div className="mr-5 text-2xl overflow-hidden">{folder.name}</div>
+                <div className="flex flex-col">
+                  {folder.role===0 && <div className="mr-5 text-m">Стратегии, которыми с вами поделились</div>}
+                  <div className="mr-5 pr-4 text-2xl overflow-hidden">{folder.name}</div>
+                </div>
                 <Line></Line>
+                {folder.role===1 && <div className="flex justify-end items-end ml-2">
+                  <Image src='/share.svg' alt='share' width={30} height={30} onClick={()=>{setSharedFolder(folder.id);onSharingOpen();}}/>
+                </div>}
               </div>
               <div className="flex flex-wrap">
                 {drawings.map((draw) => {
                   if(draw.folder_id === folder.id) {
-                    return (<Link href={{pathname: `/strategies/${draw.id}`}} key={draw.id}>
-                      <Strategy name={draw.name} id={draw.id} />
-                    </Link>)
+                    return (
+                      <Link href={{pathname: `/strategies/${draw.id}`}} key={draw.id}>
+                        <Strategy name={draw.name} id={draw.id} />
+                      </Link>
+                    )
                   }})
                 }
                 <div onClick={()=>{setType(folder.id);onOpen();}} className="cursor-pointer w-40 h-52 text-orange-500 text-5xl bg-stone-800 flex flex-col justify-center items-center rounded m-6">
@@ -140,6 +156,26 @@ export default function About() {
             )}
           </ModalContent>
         </Modal>
+
+        <Modal isOpen={isSharingOpen} onOpenChange={onSharingOpenChange}>
+            <ModalContent>
+                {(onClose) => (
+                <>
+                    <ModalHeader className="flex flex-col gap-1 text-black">
+                        Поделиться папкой
+                        <Line color={'grey'}></Line>
+                    </ModalHeader>
+                    <ModalBody>
+                        <LineInput label="Почта получателя" color="grey" onChange={setSharedName} value={sharedName}/>
+                    </ModalBody>
+                    <ModalFooter className="flex justify-end">
+                        <Button label="Отмена" color="grey" clickHandler={onClose}/>
+                        <Button label="Поделиться" color="orange" clickHandler={()=>{share(); onClose();}} disabled={!(sharedName.length > 2)}/>
+                    </ModalFooter>
+                </>
+                )}
+            </ModalContent>
+            </Modal>
       </div>
   )
   }
