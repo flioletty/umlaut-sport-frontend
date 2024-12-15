@@ -51,7 +51,7 @@ export default function About() {
   async function onSave() {
     if (name.length > 2) {
       const strategy = await createDrawing(name, type, area, router);
-      router.push(`/strategies/${strategy?.id}`)
+      router.push(`/strategies/${type}/${strategy?.id}`)
     }
   }
 
@@ -99,7 +99,7 @@ export default function About() {
                 {drawings.map((draw) => {
                   if(draw.folder_id === folder.id) {
                     return (
-                      <Link href={{pathname: `/strategies/${draw.id}`}} key={draw.id}>
+                      <Link href={{pathname: `/strategies/${folder.id}/${draw.id}`}} key={draw.id}>
                         <Strategy name={draw.name} id={draw.id} />
                       </Link>
                     )

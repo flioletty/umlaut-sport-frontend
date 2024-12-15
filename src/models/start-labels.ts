@@ -4,11 +4,23 @@ export const StartLabels = new Map<string, string>([
     ['player3', 'Игрок 3'],
     ['player4', 'Игрок 4'],
     ['player5', 'Игрок 5'],
+    ['player6', 'Игрок 6'],
+    ['player7', 'Игрок 7'],
+    ['player8', 'Игрок 8'],
+    ['player9', 'Игрок 9'],
+    ['player10', 'Игрок 10'],
+    ['player11', 'Игрок 11'],
     ['opponent1', 'Противник 1'],
     ['opponent2', 'Противник 2'],
     ['opponent3', 'Противник 3'],
     ['opponent4', 'Противник 4'],
     ['opponent5', 'Противник 5'],
+    ['opponent6', 'Противник 6'],
+    ['opponent7', 'Противник 7'],
+    ['opponent8', 'Противник 8'],
+    ['opponent9', 'Противник 9'],
+    ['opponent10', 'Противник 10'],
+    ['opponent11', 'Противник 11'],
 ])
 
 export const onbordingSteps = [

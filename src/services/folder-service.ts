@@ -75,3 +75,36 @@ export function shareFolder(email: string, id: number, router: AppRouterInstance
     return data;
   })
 }
+
+export function getFolderById(id: number, router: AppRouterInstance) {
+  return fetch(backendUrl + 'folder/' + id, {
+       method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+  })
+  .then((data) => {
+    if(data.status === 401) {
+      router.push('/login');
+    } else if(data.status === 404) {
+      router.push('/strategies');
+      toast.error('Не получается найти стратегию', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
+    }
+    return data;
+  })
+  .then((result)=>result.json())
+  .then((json)=>{
+    return json as Folder;
+  })
+}

@@ -75,6 +75,7 @@ export function updateDrawing(data: Draw, router: AppRouterInstance) {
             theme: "light",
           });
         } else if(data.status === 401) {
+          router.push('/login');
           toast.error('Ошибка входа, повторите попытку', {
             position: "top-right",
             autoClose: 5000,
@@ -85,7 +86,6 @@ export function updateDrawing(data: Draw, router: AppRouterInstance) {
             progress: undefined,
             theme: "light",
           });
-          router.push('/login');
         } else {
           toast.error('Произошла ошибка на нашей стороне. Повторите попытку позже', {
             position: "top-right",
@@ -125,6 +125,18 @@ export function getDrawingById(id: number, router: AppRouterInstance) {
     .then((data) => {
       if(data.status === 401) {
         router.push('/login');
+      }else if(data.status === 404) {
+        router.push('/strategies');
+        toast.error('Не получилось найти нужную стратегию', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
       }
       return data;
     })

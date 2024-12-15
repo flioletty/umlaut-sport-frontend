@@ -22,6 +22,7 @@ export interface DraggableBallProps {
     windowWidth : number;
     layer: React.RefObject<Konva.Layer>;
     showTrace: boolean;
+    src?: string;
 }
 
 export interface ButtonProps {
