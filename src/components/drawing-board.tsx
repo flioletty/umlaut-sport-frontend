@@ -39,7 +39,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const [slidesCount, setSlidesCount] = useState<number>(1);
 
   // compilation hack
-  setCommentVisible(false);
+  console.log(setCommentVisible)
 
   const player1 = React.useRef( null );
   const player2 = React.useRef( null );

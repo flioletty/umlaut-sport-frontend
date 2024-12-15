@@ -76,17 +76,17 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
 
     return (
         <Group>
-            <SmoothLine points={reduceSteps(steps, 25)} offset={playerRadius.current / 2} innerRef={trace} visible={showTrace}/>
+            <SmoothLine points={reduceSteps(steps, 10)} offset={playerRadius.current / 2} innerRef={trace} visible={showTrace}/>
             <Group x={(toAbsolute(position) as Moving).x} y={(toAbsolute(position) as Moving).y} id={id}
                 name={text}
                 ref={innerRef}
                 onMouseMove={()=>{
-                    if(drawings.filter((draw)=>draw.objectName===id).length!==0)
+                    if(showTrace && drawings.filter((draw)=>draw.objectName===id).length!==0)
                         document.getElementById("forth")?.focus();
                 }}
-                draggable={draggable && (drawings.filter((draw)=>draw.objectName===id).length===0)}
+                draggable={draggable && (!showTrace || (drawings.filter((draw)=>draw.objectName===id).length===0))}
                 onDragEnd={() => {
-                    const step = { objectName: id, movings: toRelative(reduceSteps(steps, 20)), label: text, hasBall: hasBall, hasBlock: false } as Step
+                    const step = { objectName: id, movings: toRelative(reduceSteps(steps, 10)), label: text, hasBall: hasBall, hasBlock: false } as Step
                     if ((innerRef?.current as Konva.Group)?.children.length < 4)
                         step.hasBall = false;
 
@@ -94,7 +94,9 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
                     additionFunc();
                     if (block) {
                         Konva.Image.fromURL('/player-block.svg', (image) => {
-                            (innerRef?.current as Konva.Group).add(image)
+                            image.height(playerRadius.current);
+                            image.width(playerRadius.current);
+                            (innerRef?.current as Konva.Group).add(image);
                         })
                         const step1 = { objectName: id, movings: [steps.at(-1)], label: text, hasBall: hasBall, hasBlock: true } as Step
                         drawings.push(step1)

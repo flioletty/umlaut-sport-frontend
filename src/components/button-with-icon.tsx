@@ -9,7 +9,7 @@ export function ButtonWithIcon({ id, iconSrc, handleClick, width, height, classN
     ])
 
     return (
-        <button id={id} className={'rounded-lg disabled:opacity-50 outline-none ' + (disabled ? '' : colorMap.get(color))} onClick={handleClick} disabled={disabled} title={hint}>
+        <button id={id} className={'rounded-full disabled:opacity-50 outline-none ' + (disabled ? '' : colorMap.get(color))} onClick={handleClick} disabled={disabled} title={hint}>
             <div className={'flex items-center text-lg ' + className}>
                 <Image src={iconSrc} alt={alt} width={width} height={height} draggable={false} />
                 {label}
