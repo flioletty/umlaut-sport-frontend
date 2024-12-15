@@ -12,6 +12,21 @@ export function register(name: string, email: string, password: string) {
         body: JSON.stringify({username: name, email: email, password: password}),
         credentials: 'include'
     })
+    .then((data)=> {
+      if(data.status === 400) {
+        toast.error('Проверьте входные данные или зарегистрируйтесь, если еще этого не сделали', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      }
+      return data;
+    })
     .then((result)=>result.json())
     .then((json)=>{
       return json.user as User;

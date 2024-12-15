@@ -36,7 +36,7 @@ export function LoginForm() {
                 </div>
                 <div className="flex flex-col items-center max-w-64">
                     {validate()!=='ok' && <div className="text-red-500 text-xs text-center">{validate()}</div>}
-                    <Button disabled={validate()!=='ok'}  label='Войти' clickHandler={()=>{console.log(email, password); login(email, password); router.push('/strategies')}} color='orange'/>
+                    <Button disabled={validate()!=='ok'}  label='Войти' clickHandler={()=>{login(email, password); router.push('/strategies')}} color='orange'/>
                 </div>
             </div>
             <div className="w-3/5" 

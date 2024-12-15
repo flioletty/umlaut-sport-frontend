@@ -27,16 +27,13 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
     useEffect(() => {
         if ((innerRef?.current as Konva.Group)?.children.length < 4)
             setHasBall(false)
-        console.log(hasBall,)
     }, [(innerRef?.current as Konva.Group)?.children])
 
     useEffect(()=>{
-        console.log('aboba', trace)
         if(drawings.filter((draw)=>draw.objectName===id).length===0) {
             steps.length = 0
             setSteps(steps);
             trace.current?.points([]);
-            console.log('aboba2')
         }
     }, [drawings.filter((draw)=>draw.objectName===id).length])
 
@@ -103,7 +100,6 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
                         drawings.push(step1)
                     }
                     setDrawings([...drawings])
-                    console.log(drawings)
                 }}
                 onDragMove={(e) => {
                     const position = getPositionFromStage(e.target.getStage());

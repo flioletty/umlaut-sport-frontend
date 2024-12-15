@@ -14,7 +14,6 @@ export function RegisterForm() {
     const router = useRouter()
 
     function validate() {
-        console.log(name, email, password);
         if (name.length < 3)
             return "Имя должно быть не менее 3 символов";
         else if (/[A-Za-zА-Яа-я0-9 ]*/.test(name) == false)

@@ -23,6 +23,7 @@ import Joyride, { STATUS } from 'react-joyride';
 import { onbordingSteps } from "../models/start-labels";
 import { applyStepAnimated } from '../utils/animation';
 import { TextareaAutosize } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 export function DrawingBoard({ params }: { params: { id: string } }) {  
   const [drawings, setDrawings] = React.useState<Step[]>([]);
@@ -38,8 +39,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   const [runOnboarding, setRunOnboarding] = useState<boolean>(false);
   const [slidesCount, setSlidesCount] = useState<number>(1);
 
-  // compilation hack
+  const router = useRouter();
+
   console.log(setCommentVisible)
+  // compilation hack
 
   const player1 = React.useRef( null );
   const player2 = React.useRef( null );
@@ -81,7 +84,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     async function create() {
       const id = params.id;
       if (Number(id)) {
-        const strategy = await getDrawingById(Number(id));
+        const strategy = await getDrawingById(Number(id), router);
         if(!strategy) 
           return;
         setDraw(strategy);
@@ -122,7 +125,6 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         mapa.set(step.objectName, [step])
       }
     }
-    console.log(mapa);
     return mapa.values().toArray();
   }
 
@@ -161,18 +163,20 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
   function drawSnapshot(index : number) {
     const lastSteps = new Map<string, Step>();
     let lastHaveBall = ""
+    const snaps = [...snapshots];
     for (let i = 0; i< index; i++) {
-      for ( const step of getPerActorStepsMatrix(snapshots[i]).flat())  {
+      const matrSteps = getPerActorStepsMatrix(snaps[i]).flat();
+      for ( const step of matrSteps)  {
         if (step.hasBall)
           lastHaveBall = step.objectName;
         lastSteps.set(step.objectName, step)
       }
     }
-    console.log(lastSteps)
     const newLastSteps = [...lastSteps.values().toArray().flat()];
     for (const step of newLastSteps) {
       if (step.hasBall && step.objectName !== lastHaveBall) 
         step.hasBall = false;
+      console.log(step)
       applyStepAnimated(toAbsolute, layer, mapObjects, step, 0)
     }
   }
@@ -199,11 +203,9 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     const str = stage.current?.getStage()?.toJSON();
     const figures = JSON.parse(str ?? '').children[0].children;
     const res : Step[] = [];
-    console.log(figures)
     for (const fig of figures) {
       const figure = fig.children[1];
       if(figure) {
-        console.log(figure)
         res.push({
           label: figure.attrs.name,
           objectName: figure.attrs.id,
@@ -400,7 +402,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               area: draw?.area ?? 'half',
               folder_id: draw?.folder_id ?? 1,
               comment: comment,
-            })}} label='Сохранить' color='orange'/>
+            }, router)}} label='Сохранить' color='orange'/>
           <Button clickHandler={()=>{}} label='Отмена'/>
         </div>
       </div>

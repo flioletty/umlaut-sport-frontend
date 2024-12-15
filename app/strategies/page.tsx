@@ -31,10 +31,10 @@ export default function About() {
 
   useEffect(()=>{
     async function get() {
-      const res = await getAllDrawing();
+      const res = await getAllDrawing(router);
       if(!res)
         return;
-      const folders = await getAllFolders();
+      const folders = await getAllFolders(router);
       if(res.length)
         setDrawings([...res]);
       if(folders.length){
@@ -46,7 +46,7 @@ export default function About() {
 
   async function onSave() {
     if (name.length > 2) {
-      const strategy = await createDrawing(name, type, area);
+      const strategy = await createDrawing(name, type, area, router);
       router.push(`/strategies/${strategy?.id}`)
     }
   }
@@ -55,7 +55,7 @@ export default function About() {
     if (folderName.length < 3) {
       return;
     }
-    const strategy = await createFolder(folderName);
+    const strategy = await createFolder(folderName, router);
     return strategy;
   }
 

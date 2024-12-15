@@ -30,8 +30,8 @@ export function curvedMoveAnimation(node: Konva.Node, movings: Moving[], duratio
 }
 
 export function applyStepAnimated(toAbsolute: (m: Moving | Moving[]) => Moving | Moving[], layer: React.RefObject<Layer>, mapObjects: Map<string, React.RefObject<Group>>, step: Step, duration: number, backward: boolean = false,) {
+    // console.log(step.objectName, ...step.movings)
     const movings = toAbsolute(step.movings) as Moving[]
-    console.log(step)
     if (step.objectName === 'ball') {
         const parent = (mapObjects.get(step.objectName)?.current! as Konva.Node).getParent() as Konva.Group;
         const node = (mapObjects.get(step.objectName)?.current! as Konva.Group);

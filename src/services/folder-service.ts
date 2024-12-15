@@ -1,7 +1,8 @@
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { Folder } from "../models/folder.dto";
 import { backendUrl } from "./drawing-service";
 
-export function getAllFolders() {
+export function getAllFolders(router: AppRouterInstance) {
     return fetch(backendUrl + 'folders', {
         method: 'GET',
         mode: 'cors',
@@ -9,14 +10,21 @@ export function getAllFolders() {
           'Content-Type': 'application/json'
         },
         credentials: 'include'
-    }).then((result)=>result.json()
+    })
+    .then((data) => {
+      if(data.status === 401) {
+        router.push('/login');
+      }
+      return data;
+    })
+    .then((result)=>result.json()
     .then((json)=>{
       return json as Folder[];
     })
   );
 }
 
-export function createFolder(name: string) {
+export function createFolder(name: string, router: AppRouterInstance) {
     return fetch(backendUrl + 'folder', {
         method: 'POST',
         mode: 'cors',
@@ -25,6 +33,12 @@ export function createFolder(name: string) {
         },
         body: JSON.stringify({name: name}),
         credentials: 'include'
+    })
+    .then((data) => {
+      if(data.status === 401) {
+        router.push('/login');
+      }
+      return data;
     })
     .then((result)=>result.json())
     .then((json)=>{
