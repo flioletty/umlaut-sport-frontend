@@ -10,6 +10,7 @@ import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { toRelative as toRelativeImpl, toAbsolute as toAbsoluteImpl } from "../utils/moving-convers";
 import { SmoothLine } from "./smoothLine";
+import { attractAttention } from "../utils/highlight";
 
 export function DraggableBall({ drawings, setDrawings, position, src, id, innerRef, additionFunc = () => { }, disabled, ballRef, block = false, draggable = true, windowHeight, windowWidth, showTrace = true }: DraggableThingProps) {
 
@@ -82,7 +83,7 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
                 ref={innerRef}
                 onMouseMove={()=>{
                     if(showTrace && drawings.filter((draw)=>draw.objectName===id).length!==0)
-                        document.getElementById("forth")?.focus();
+                        attractAttention(document.getElementById("forth"));
                 }}
                 draggable={draggable && (!showTrace || (drawings.filter((draw)=>draw.objectName===id).length===0))}
                 onDragEnd={() => {

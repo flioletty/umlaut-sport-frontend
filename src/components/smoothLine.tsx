@@ -8,7 +8,7 @@ export const SmoothLine : FC<SmoothLineProps> = ({ points, offset, innerRef, vis
     <Line
       points = {[...points.flatMap(p => [p.x+offset, p.y+offset])]}
       ref = {innerRef}
-      stroke = {"black"}
+      stroke = {"rgb(154 52 18)"}
       strokeWidth = {2}
       tension = {0.5}
       lineCap = {"round"}

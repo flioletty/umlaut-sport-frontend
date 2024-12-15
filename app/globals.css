@@ -27,3 +27,13 @@ body {
     text-wrap: balance;
   }
 }
+
+.highlight {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { background-color: yellow; }
+  50% { background-color: rgb(190, 128, 14); }
+  100% { background-color: yellow; }
+}

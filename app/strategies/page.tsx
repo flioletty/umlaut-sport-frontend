@@ -78,7 +78,7 @@ export default function About() {
           {folders.map((folder) => 
             <div className="flex flex-col mt-5" key={folder.id}>
               <div className="flex items-center whitespace-nowrap">
-                <div className="mr-5 text-2xl">{folder.name}</div>
+                <div className="mr-5 text-2xl overflow-hidden">{folder.name}</div>
                 <Line></Line>
               </div>
               <div className="flex flex-wrap">

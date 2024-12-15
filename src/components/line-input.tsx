@@ -18,7 +18,7 @@ export function LineInput({label, color='white', onChange, value, type, pattern}
                 minLength={3} 
                 maxLength={30} 
                 onChange={(e)=>onChange(e.target.value)} 
-                className={"bg-transparent border-b-2 focus:outline-none invalid:border-b-red-600 " + colorMap.get(color)}
+                className={"bg-transparent overflow-hidden border-b-2 focus:outline-none invalid:border-b-red-600 " + colorMap.get(color)}
                 >
             </input>
         </div>

@@ -27,7 +27,7 @@ export function EditableText({ x, y, onChange, text, disabled}: EditableTextProp
     return (
       <Html groupProps={{ x, y }} divProps={{ style: { opacity: 1 } }}>
         <input
-          className="w-2/4 text-black text-xs bg-transparent border-b-2 focus:outline-none"
+          className="w-2/4 text-black text-xs overflow-hidden bg-transparent border-b-2 focus:outline-none"
           value={text}
           onChange={handleTextChange}
           onKeyDown={handleEscapeKeys}
