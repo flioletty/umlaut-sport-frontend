@@ -334,22 +334,22 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
             <ButtonWithIcon hint='Вернуться к списку стратегий' handleClick={() => {}} color='grey' iconSrc='/back.svg' alt='back' width={40} height={40} className='m-2' label='К стратегиям'/>
           </Link>
           <div className='flex justify-center items-center text-3xl grow width-max'>
-            <input id='first' className='bg-transparent' maxLength={20} minLength={3}
+            <input disabled={!draw?.role} id='first' className='bg-transparent' maxLength={20} minLength={3}
               value={draw?.name ?? ''} 
               onChange={e => setDraw(draw==undefined ? undefined : {...draw, id: draw?.id ?? 0, name: e.target.value})} 
             />
           </div>
-          <div className='flex items-center'>
-            <Image className='cursor-pointer m-1' onClick={()=>{setRunOnboarding(true)}} src={'/info.svg'} alt='info' width={20} height={20}/>
+          {!!draw?.role && <div className='flex items-center cursor-pointer' onClick={()=>{setRunOnboarding(true)}}>
+            <Image className='m-1' src={'/info.svg'} alt='info' width={20} height={20}/>
             Обучение
-          </div>
+          </div>}
         </div>
         <div className='flex justify justify-evenly'>
           <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
-              <Image id='seventh' src='/opponent.svg' alt='opponent' width={60} height={60} draggable={snapshots.length===0}/>
+              {!!draw?.role && <><Image id='seventh' src='/opponent.svg' alt='opponent' width={60} height={60} draggable={snapshots.length===0}/>
               <Image title='Блок' id='eighth' src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
               <ButtonWithIcon hint={'Отменить действие'} id='tenth' handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length===0}/>
-              <ButtonWithIcon hint={'Вернуть действие'} id='eleventh' handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/>
+              <ButtonWithIcon hint={'Вернуть действие'} id='eleventh' handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/></>}
               <ButtonWithIcon hint={'Воспроизвести'} id='thelth' handleClick={() => play(2000, snapshots.length)} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>
               {/* <ButtonWithIcon hint={'Добавить комментарий'} id='second' handleClick={() => {setCommentVisible(!commentVisible); console.log(drawings.length);}} iconSrc='/comment.svg' alt='add comment' width={53} height={53}/> */}
           </div>
@@ -387,14 +387,14 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               <Layer ref={layer1}></Layer>
             </Stage>
           </div>
-          <div className='mt-6 mb-6'>
+          {!!draw?.role && <div className='mt-6 mb-6'>
               <SlideLine onMinus={onMinusClicked} onPlus={onPlusClicked} onChangeCur={onCurrentSnapChange} slidesMax={slidesMax} slidesCount={slidesCount} setSlidesCount={setSlidesCount} />
-          </div>
-          <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
+          </div>}
+          {!!draw?.role && <div className={(commentVisible ? '' : 'hidden ') + 'mt-6 bg-transparent border-orange-500'}>
             <TextareaAutosize minRows={3} placeholder='Введите свой комментарий' maxRows={20} className='bg-transparent border-orange-500' value={comment} onChange={(e)=>setComment(e.target.value)}></TextareaAutosize>
-          </div>
+          </div>}
         </div>
-        <div className='flex items-center justify-end'>
+        {!!draw?.role && <div className='flex items-center justify-end'>
           <Button clickHandler={()=>{updateDrawing({
               id: draw?.id ?? 0,
               name: draw?.name ?? '',
@@ -402,9 +402,10 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
               area: draw?.area ?? 'half',
               folder_id: draw?.folder_id ?? 1,
               comment: comment,
+              role: draw?.role ?? 0,
             }, router)}} label='Сохранить' color='orange'/>
           <Button clickHandler={()=>{}} label='Отмена'/>
-        </div>
+        </div>}
       </div>
     </div>
   );

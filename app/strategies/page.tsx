@@ -16,6 +16,7 @@ import { Folder } from "@/src/models/folder.dto";
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
+import { logout } from "@/src/services/auth-service";
 
 
 export default function About() {
@@ -28,6 +29,7 @@ export default function About() {
   const [name, setName] = useState<string>('Новая стратегия');
   const [area, setArea] = useState<string | number>('full');
   const [type, setType] = useState<number | string>(1);
+  const [sportType, setSportType] = useState<number | string>('basketball');
   const [folderName, setFolderName] = useState<string>('Новая папка');
   const [sharedFolder, setSharedFolder] = useState<number>(0);
 
@@ -63,7 +65,7 @@ export default function About() {
     if (folderName.length < 3) {
       return;
     }
-    const strategy = await createFolder(folderName, router);
+    const strategy = await createFolder(folderName, sportType, router);
     return strategy;
   }
 
@@ -82,16 +84,26 @@ export default function About() {
           theme="light"
           transition={Bounce}
         />
-        <div className="text-3xl">Мои стратегии</div>
+        <div className="flex justify-between">
+          <div className="text-3xl">Мои стратегии</div>
+          <div className="cursor-pointer" onClick={()=>{logout(router)}}>
+            <Image src={"/logout.svg"} alt={"logout"} width={30} height={30}/>
+          </div>
+        </div>
           {folders.map((folder) => 
             <div className="flex flex-col mt-5" key={folder.id}>
               <div className="flex items-center whitespace-nowrap">
-                <div className="flex flex-col">
-                  {folder.role===0 && <div className="mr-5 text-m">Стратегии, которыми с вами поделились</div>}
-                  <div className="mr-5 pr-4 text-2xl overflow-hidden">{folder.name}</div>
+                <div className="mr-8 flex">
+                  <div className="flex flex-col">
+                    {folder.role===0 && <div className="mr-5 text-m">Стратегии, которыми с вами поделились</div>}
+                    <div className="pr-4 text-2xl overflow-hidden">{folder.name}</div>
+                  </div>
+                  {folder.sport_type === 'football' && <Image src={"/football-icon.svg"} alt={"football"} width={30} height={30}/>}
+                  {folder.sport_type === 'basketball' && <Image src={"/basketball-icon.svg"} alt={"basketball"} width={30} height={30}/>}
+                  {folder.sport_type === 'hockey' && <Image src={"/hockey-icon.svg"} alt={"hockey"} width={30} height={30}/>}
                 </div>
                 <Line></Line>
-                {folder.role===1 && <div className="flex justify-end items-end ml-2">
+                {folder.role===1 && <div className="cursor-pointer flex justify-end items-end ml-2">
                   <Image src='/share.svg' alt='share' width={30} height={30} onClick={()=>{setSharedFolder(folder.id);onSharingOpen();}}/>
                 </div>}
               </div>
@@ -147,10 +159,15 @@ export default function About() {
                 </ModalHeader>
                 <ModalBody>
                   <LineInput label="Название" color="grey" onChange={setFolderName} value={folderName}/>
+                  <LineSelect label="Вид спорта" color="grey" options={[
+                    {id: "basketball", name: "Баскетбол"},
+                    {id: "football", name: "Футбол"},
+                    {id: "hockey", name: "Хоккей"}
+                    ]} onChange={setSportType} value={sportType}/>
                 </ModalBody>
                 <ModalFooter className="flex justify-end">
                   <Button label="Отмена" color="grey" clickHandler={onClose}/>
-                  <Button label="Сохранить" color="orange" clickHandler={async ()=>{const newFolder = await saveFolder(); onClose(); folders.push(newFolder!)}} disabled={!(folderName.length > 2)}/>
+                  <Button label="Создать" color="orange" clickHandler={async ()=>{const newFolder = await saveFolder(); onClose(); folders.push(newFolder!)}} disabled={!(folderName.length > 2)}/>
                 </ModalFooter>
               </>
             )}

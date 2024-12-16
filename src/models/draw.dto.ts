@@ -7,4 +7,5 @@ export interface Draw {
     folder_id: number;
     comment: string;
     area: string;
+    role: number;
 }

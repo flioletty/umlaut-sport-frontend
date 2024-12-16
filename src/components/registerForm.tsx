@@ -5,6 +5,7 @@ import { Button } from "./button";
 import { LineInput } from "./line-input";
 import { register } from "../services/auth-service";
 import { useRouter } from "next/navigation";
+import { Bounce, ToastContainer } from "react-toastify";
 
 export function RegisterForm() {
     const [name, setName] = useState('');
@@ -28,24 +29,42 @@ export function RegisterForm() {
     }
 
     return (
-        <div className="flex fixed w-3/4 top-1/4 left-1/4">
-            <div className="w-2/5" 
-            style={{ 
-                backgroundImage: `url(player-photo.svg)`, 
-                backgroundRepeat: 'no-repeat', backgroundSize: 'contain'}}>
-            </div>
-            <div className="flex m-7 ml-12 p-16 gap-10 justify-center items-center flex-col bg-neutral-800 rounded top-2/4 left-2/4">
-                <div className="text-2xl flex items-center font-semibold">
-                    Регистрация
+        <div className="p-2">
+            <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={true}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            transition={Bounce}
+            />
+            <div className="flex fixed w-3/4 top-1/4 left-1/4">
+                <div className="w-2/5" 
+                style={{ 
+                    backgroundImage: `url(player-photo.svg)`, 
+                    backgroundRepeat: 'no-repeat', backgroundSize: 'contain'}}>
                 </div>
-                <div className="flex items-start flex-col gap-9">
-                    <LineInput color='white' label="Имя" onChange={(val)=>{setName(val)}} value={name} pattern="[A-Za-zА-Яа-я0-9 ]*"></LineInput>
-                    <LineInput color='white' label="Почта" type='email' onChange={(val)=>{setMail(val)}} value={email} pattern="[A-Za-z@.0-9 ]*"></LineInput>
-                    <LineInput color='white' label="Пароль" type='password' onChange={(val)=>{setPassword(val)}} value={password}></LineInput>
-                </div>
-                <div className="flex flex-col items-center">
-                    {validate()!=='ok' && <div className="text-red-500 text-xs">{validate()}</div>}
-                    <Button disabled={validate()!=='ok'} label='Зарегистрироваться' clickHandler={()=>{register(name, email, password); router.push('/strategies')}} color='orange'/>
+                <div className="flex m-7 ml-12 p-16 gap-10 justify-center items-center flex-col bg-neutral-800 rounded top-2/4 left-2/4">
+                    <div className="text-2xl flex items-center font-semibold">
+                        Регистрация
+                    </div>
+                    <div className="flex items-start flex-col gap-9">
+                        <LineInput color='white' label="Имя" onChange={(val)=>{setName(val)}} value={name} pattern="[A-Za-zА-Яа-я0-9 ]*"></LineInput>
+                        <LineInput color='white' label="Почта" type='email' onChange={(val)=>{setMail(val)}} value={email} pattern="[A-Za-z@.0-9 ]*"></LineInput>
+                        <LineInput color='white' label="Пароль" type='password' onChange={(val)=>{setPassword(val)}} value={password}></LineInput>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <div className="text-white text-xs">Уже есть аккаунт? 
+                            <span className="cursor-pointer underline underline-offset-2" onClick={()=>router.push('/login')}>Войдите</span>
+                        </div>
+                        {validate()!=='ok' && <div className="text-red-500 text-xs">{validate()}</div>}
+                        <Button disabled={validate()!=='ok'} label='Зарегистрироваться' clickHandler={()=>{register(name, email, password, router)}} color='orange'/>
+                    </div>
                 </div>
             </div>
         </div>

@@ -25,14 +25,14 @@ export function getAllFolders(router: AppRouterInstance) {
   );
 }
 
-export function createFolder(name: string, router: AppRouterInstance) {
+export function createFolder(name: string, sportType: string | number, router: AppRouterInstance) {
     return fetch(backendUrl + 'folder', {
         method: 'POST',
         mode: 'cors',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({name: name}),
+        body: JSON.stringify({name: name, sport_type: sportType}),
         credentials: 'include'
     })
     .then((data) => {
@@ -58,7 +58,18 @@ export function shareFolder(email: string, id: number, router: AppRouterInstance
       credentials: 'include'
   })
   .then((data) => {
-    if(data.status === 401) {
+    if (data.status === 200){
+      toast.success('Вы поделились папкой!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }else if(data.status === 401) {
       router.push('/login');
     } else if(data.status === 404) {
       toast.error('Пользователь с такой почтой еще не зарегистрирован', {
