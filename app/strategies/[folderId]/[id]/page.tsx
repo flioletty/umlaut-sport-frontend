@@ -13,6 +13,10 @@ const CanvasFootball = dynamic(() => import('../../../../src/components/drawing-
   ssr: false,
 });
 
+const CanvasHockey = dynamic(() => import('../../../../src/components/drawing-board-hockey').then(mod => mod.DrawingBoard), {
+  ssr: false,
+});
+
 export default function Home({ params }: { params: { id: string, folderId: string } }) {
   const router = useRouter();
   const [type, setType] = useState<string>('');
@@ -26,8 +30,8 @@ export default function Home({ params }: { params: { id: string, folderId: strin
   return (
     <>
       {type === 'football' && <CanvasFootball params={params}/>}
-      {/* {type.current === '' && <Canvas params={params}/>}
-      {type.current === '' && <Canvas params={params}/>} */}
+      {type === 'hockey' && <CanvasHockey params={params}/>}
+      {/* {type.current === '' && <Canvas params={params}/>}  */}
       {type === 'basketball' && <CanvasBasketball params={params}/>}
     </>
   );

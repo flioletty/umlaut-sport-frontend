@@ -6,6 +6,7 @@ import { LineInput } from "./line-input";
 import { login } from "../services/auth-service";
 import { useRouter } from "next/navigation";
 import { Bounce, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export function LoginForm() {
     const [email, setMail] = useState('');
@@ -24,7 +25,7 @@ export function LoginForm() {
     }
 
     return (
-        <div className="p-2">
+        <div className="p-5 h-screen">
             <ToastContainer
             position="top-right"
             autoClose={5000}

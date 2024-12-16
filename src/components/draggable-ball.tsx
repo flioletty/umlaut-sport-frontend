@@ -123,7 +123,7 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
                     addBall(e);
                 }}
             >
-                <Image width={playerRadius.current} height={playerRadius.current} alt='player' image={image} />
+                <Image width={id==="ball" ? playerRadius.current-10 : playerRadius.current} height={id==="ball" ? playerRadius.current-10 : playerRadius.current} alt='player' image={image} />
                 <Text fontSize={playerRadius.current * 0.6} x={playerRadius.current * 0.34} y={playerRadius.current * 0.25} text={id === 'ball' ? '' : (id.match(/\d+/) ? parseInt(id.match(/\d+/)).toString() : '')} />
                 <EditableText x={playerRadius.current * (0.5 - text.length * 0.04)} y={playerRadius.current} text={text} onChange={(value: string) => { setText(value); StartLabels.set(id, value) }} disabled={disabled} />
             </Group>

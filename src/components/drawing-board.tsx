@@ -1,6 +1,6 @@
 "use client"
 
-import { getDrawingById, updateDrawing } from '@/src/services/drawing-service';
+import { getAllDrawing, getDrawingById, updateDrawing } from '@/src/services/drawing-service';
 import Konva from 'konva';
 import React, { MutableRefObject, useCallback, useEffect, useState } from 'react';
 import { Stage, Layer } from 'react-konva';
@@ -85,6 +85,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
       const id = params.id;
       if (Number(id)) {
         const strategy = await getDrawingById(Number(id), router);
+        const draws = await getAllDrawing(router);
         if(!strategy) 
           return;
         setDraw(strategy);
@@ -96,6 +97,9 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
           setSlidesCount(slidesLen);
           // snapshots are empty ¯\_(ツ)_/¯
           // drawSnapshot(1)
+        }
+        if(draws?.length === 1) {
+          setRunOnboarding(true);
         }
         if(strategy.area === 'full') {
           areaLink.current = '/full-background-new.svg'

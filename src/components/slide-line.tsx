@@ -1,17 +1,31 @@
 import Slider from "@mui/material/Slider";
 import { ButtonWithIcon } from "./button-with-icon";
 import { SlideLineProps } from "../models/props.models";
+import { useState } from "react";
 
 export function SlideLine({onPlus, onMinus, onChangeCur, slidesMax, slidesCount, setSlidesCount}: SlideLineProps) {
+    const [curVal, setCurVal] = useState(1);
+
     return (
         <div className="flex flex-col h-5/6 justify-items-center gap-4 w-4/5 items-center">
-            <ButtonWithIcon hint="Добавить слайд" id='forth' handleClick={() => {onPlus(); setSlidesCount(slidesCount+1)}} iconSrc='/plus.svg' alt='plus' color='grey' width={53} height={53} disabled={false}/>
+            <ButtonWithIcon hint="Добавить слайд" id='forth' handleClick={() => {onPlus(); setSlidesCount(slidesCount+1); setCurVal(slidesCount+1);}} iconSrc='/plus.svg' alt='plus' color='grey' width={53} height={53} disabled={false}/>
             <Slider id='sixth'
                 style={{color:'rgb(251 146 60)'}}
                 aria-label="Temperature"
                 value={slidesCount}
-                onChange={(e, newVal) => {setSlidesCount((newVal as number)); }}
-                onChangeCommitted={(e, newVal) => {onChangeCur((newVal as number)-1); setSlidesCount((newVal as number)); }}
+                onChange={(e, newVal) => {
+                    if((newVal as number) < slidesCount) {
+                        setSlidesCount(curVal-1);
+                    } else if((newVal as number) > slidesCount) {
+                        setSlidesCount(curVal+1);
+                    } else {
+                        setSlidesCount(curVal);
+                    }
+                }}
+                onChangeCommitted={() => {
+                    onChangeCur(slidesCount-1);
+                    setCurVal(slidesCount); 
+                }}
                 valueLabelDisplay="on"
                 step={1}
                 min={1}

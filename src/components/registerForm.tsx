@@ -6,6 +6,7 @@ import { LineInput } from "./line-input";
 import { register } from "../services/auth-service";
 import { useRouter } from "next/navigation";
 import { Bounce, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export function RegisterForm() {
     const [name, setName] = useState('');
@@ -30,6 +31,7 @@ export function RegisterForm() {
 
     return (
         <div className="p-2">
+            <div className="p-2">
             <ToastContainer
             position="top-right"
             autoClose={5000}
@@ -42,7 +44,7 @@ export function RegisterForm() {
             pauseOnHover
             theme="light"
             transition={Bounce}
-            />
+            /></div>
             <div className="flex fixed w-3/4 top-1/4 left-1/4">
                 <div className="w-2/5" 
                 style={{ 
@@ -59,8 +61,8 @@ export function RegisterForm() {
                         <LineInput color='white' label="Пароль" type='password' onChange={(val)=>{setPassword(val)}} value={password}></LineInput>
                     </div>
                     <div className="flex flex-col items-center">
-                        <div className="text-white text-xs">Уже есть аккаунт? 
-                            <span className="cursor-pointer underline underline-offset-2" onClick={()=>router.push('/login')}>Войдите</span>
+                        <div className="text-white text-xs">Уже есть аккаунт?  
+                            <span className="cursor-pointer underline underline-offset-2" onClick={()=>router.push('/login')}> Войдите</span>
                         </div>
                         {validate()!=='ok' && <div className="text-red-500 text-xs">{validate()}</div>}
                         <Button disabled={validate()!=='ok'} label='Зарегистрироваться' clickHandler={()=>{register(name, email, password, router)}} color='orange'/>

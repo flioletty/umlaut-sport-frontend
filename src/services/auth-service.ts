@@ -17,8 +17,7 @@ export function register(name: string, email: string, password: string, router: 
       if(data.status === 200) {
         router.push('/strategies');
       }else if(data.status === 400) {
-        router.push('/login');
-        toast.error('Аккаунт с такой почтой уже существует, войдите', {
+        toast.error('Аккаунт с такой почтой или именем уже существует, войдите', {
           position: "top-right",
           autoClose: 5000,
           hideProgressBar: true,
