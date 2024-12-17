@@ -351,7 +351,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         <div className='flex justify justify-evenly'>
           <div className='bg-orange-400 p-6 m-6 mx-10 rounded-3xl flex flex-col justify-evenly items-center'>
               {!!draw?.role && <><Image id='seventh' src='/opponent.svg' alt='opponent' width={60} height={60} draggable={snapshots.length===0}/>
-              <Image title='Блок' id='eighth' src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/>
+              {/* <Image title='Блок' id='eighth' src='/block.svg' alt='block' width={60} height={60} draggable={false} onClick={()=>{setDrawBlock(true)}}/> */}
               <ButtonWithIcon hint={'Отменить действие'} id='tenth' handleClick={() => undo()} iconSrc='/undo.svg' alt='undo' width={53} height={53} disabled={drawings.length===0}/>
               <ButtonWithIcon hint={'Вернуть действие'} id='eleventh' handleClick={() => redo()} iconSrc='/undo.svg' alt='redo' width={53} height={53} className='-scale-x-100' disabled={deletedDrawings.length===0}/></>}
               <ButtonWithIcon hint={'Воспроизвести'} id='thelth' handleClick={() => play(2000, snapshots.length)} iconSrc='/play.svg' alt='play' width={40} height={40} className='m-2'/>

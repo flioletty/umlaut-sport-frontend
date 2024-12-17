@@ -96,7 +96,7 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
                             image.width(playerRadius.current);
                             (innerRef?.current as Konva.Group).add(image);
                         })
-                        const step1 = { objectName: id, movings: [steps.at(-1)], label: text, hasBall: hasBall, hasBlock: true } as Step
+                        const step1 = { objectName: id, movings: toRelative([steps.at(-1)] as Moving[]), label: text, hasBall: hasBall, hasBlock: true } as Step
                         drawings.push(step1)
                     }
                     setDrawings([...drawings])
@@ -124,7 +124,7 @@ export function DraggableBall({ drawings, setDrawings, position, src, id, innerR
                 }}
             >
                 <Image width={id==="ball" ? playerRadius.current-10 : playerRadius.current} height={id==="ball" ? playerRadius.current-10 : playerRadius.current} alt='player' image={image} />
-                <Text fontSize={playerRadius.current * 0.6} x={playerRadius.current * 0.34} y={playerRadius.current * 0.25} text={id === 'ball' ? '' : (id.match(/\d+/) ? parseInt(id.match(/\d+/)).toString() : '')} />
+                <Text fontSize={playerRadius.current * 0.6} x={playerRadius.current * 0.34} y={playerRadius.current * 0.25} text={id === 'ball' ? '' : (id.match(/\d+/) ? parseInt(id.match(/\d+/)?.toString() ?? '').toString() : '')} />
                 <EditableText x={playerRadius.current * (0.5 - text.length * 0.04)} y={playerRadius.current} text={text} onChange={(value: string) => { setText(value); StartLabels.set(id, value) }} disabled={disabled} />
             </Group>
         </Group>
