@@ -115,6 +115,7 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
         setDraw(strategy);
         setComment(strategy.comment);
         if(strategy.snapshot){
+          updateOpponentCoords(strategy.snapshot?.[0])
           setSnapshots([...strategy.snapshot]);
           const slidesLen = [...strategy.snapshot].length
           setSlidesMax(slidesLen)
@@ -132,6 +133,17 @@ export function DrawingBoard({ params }: { params: { id: string } }) {
     }
     create();
   },[])
+
+  function updateOpponentCoords(snaphot: Snapshot) {
+    const opponentsCoordNew = Array<Moving>();
+    for (const step of snaphot.step) {
+      if (step.objectName.startsWith("opponent") ) {
+        console.log("add opponent", step);
+        opponentsCoordNew.push(step.movings.at(-1)!)
+      }
+    }
+    setOpponentsCoord(opponentsCoord.concat(opponentsCoordNew));
+  }
 
   function getPerActorStepsMatrix(snapshot : Snapshot) {
 

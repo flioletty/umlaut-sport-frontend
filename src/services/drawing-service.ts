@@ -1,6 +1,8 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { Draw } from "../models/draw.dto";
 import { toast } from 'react-toastify';
+import { getFolderById } from "./folder-service";
+import { Snapshot } from "../models/moving.dto";
 
 export const backendUrl = 'http://83.166.236.130:8000/api/v1/'
 
@@ -38,6 +40,36 @@ export function createDrawing(name: string, folderId: number | string, area: str
         });
         return null;
     })
+}
+
+export function createAIDrawing(folderId: string | number, prompt: string,  router: AppRouterInstance) {
+  return fetch('http://raplegends.ru:8001/ai-assistant', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({promt: prompt, sport: "basketball"}),
+  })
+  .then((data) => {
+    return data;
+  })
+  .then((result)=>result.json())
+  .then((json)=>{
+    return json as Snapshot[];
+  })
+  .catch(()=>{
+    toast.error('Произошла ошибка на нашей стороне. Повторите попытку позже', {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+      return null;
+  })
 }
 
 
