@@ -1,7 +1,6 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { Draw } from "../models/draw.dto";
 import { toast } from 'react-toastify';
-import { getFolderById } from "./folder-service";
 import { Snapshot } from "../models/moving.dto";
 
 export const backendUrl = 'http://83.166.236.130:8000/api/v1/'
@@ -42,7 +41,7 @@ export function createDrawing(name: string, folderId: number | string, area: str
     })
 }
 
-export function createAIDrawing(folderId: string | number, prompt: string,  router: AppRouterInstance) {
+export function createAIDrawing(folderId: string | number, prompt: string) {
   return fetch('http://raplegends.ru:8001/ai-assistant', {
       method: 'POST',
       headers: {

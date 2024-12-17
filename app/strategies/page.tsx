@@ -4,7 +4,7 @@ import { Strategy } from "@/src/components/strategy";
 import { Draw } from "@/src/models/draw.dto";
 import { createAIDrawing, createDrawing, getAllDrawing, updateDrawing } from "@/src/services/drawing-service";
 import Link from "next/link"
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure} from "@nextui-org/modal";
 import { Button } from "@/src/components/button";
 import { Line } from "@/src/components/line";
@@ -68,10 +68,10 @@ export default function About() {
   async function onAiCreate(){
     if (name.length > 2 || aiPromt.length > 15) {
       const strategy = await createDrawing(name, type, area, router);
-      const ai = await createAIDrawing('basketball', aiPromt, router);
+      const ai = await createAIDrawing('basketball', aiPromt);
       if(strategy && ai) {
         strategy.snapshot = ai;
-        const update = await updateDrawing(strategy, router);
+        await updateDrawing(strategy, router);
       }
       router.push(`/strategies/${type}/${strategy?.id}`)
     }
