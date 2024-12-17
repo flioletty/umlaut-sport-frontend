@@ -1,0 +1,24 @@
+import { ButtonColor, LineInputProps } from "../models/props.models"
+
+export function AreaInput({label, color='white', onChange, value, type, pattern}: LineInputProps) {
+    const colorMap = new Map<ButtonColor, string>([
+        ['white', 'text-white border-b-stone-100'],
+        ['orange', 'text-orange-400 border-b-orange-400'],
+        ['grey', 'text-stone-700 border-b-stone-600']
+    ])
+    
+    return (
+        <div>
+            <span className={'border-none mr-3 ' + colorMap.get(color)}>{label}:</span>
+            <textarea 
+                value={value} 
+                required 
+                minLength={3} 
+                maxLength={30} 
+                onChange={(e)=>onChange(e.target.value)} 
+                className={"bg-transparent overflow-hidden border-b-2 focus:outline-none invalid:border-b-red-600 " + colorMap.get(color)}
+                >
+            </textarea>
+        </div>
+    )
+}

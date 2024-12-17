@@ -1,10 +1,8 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { Draw } from "../models/draw.dto";
 import { toast } from 'react-toastify';
-import { gptDraw } from "./drawFromGpt";
 
 export const backendUrl = 'http://83.166.236.130:8000/api/v1/'
-export const aiAssistUrl = 'http://95.165.172.243:8001/ai-assistant'
 
 export function createDrawing(name: string, folderId: number | string, area: string | number, router: AppRouterInstance) {
     const folder_id = Number(folderId)

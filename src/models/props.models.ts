@@ -67,6 +67,13 @@ export interface LineInputProps {
     pattern?: string;
 }
 
+export interface CheckboxProps {
+    color?: ButtonColor;
+    label: string;
+    onChange: React.Dispatch<React.SetStateAction<boolean>>;
+    value: boolean;
+}
+
 export interface EditableTextProps {
     x : number;
     y : number;

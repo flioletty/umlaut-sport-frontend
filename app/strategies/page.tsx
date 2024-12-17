@@ -4,7 +4,7 @@ import { Strategy } from "@/src/components/strategy";
 import { Draw } from "@/src/models/draw.dto";
 import { createDrawing, getAllDrawing } from "@/src/services/drawing-service";
 import Link from "next/link"
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure} from "@nextui-org/modal";
 import { Button } from "@/src/components/button";
 import { Line } from "@/src/components/line";
@@ -17,6 +17,8 @@ import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
 import { logout } from "@/src/services/auth-service";
+import { AreaInput } from "@/src/components/text-area";
+import { CheckboxInput } from "@/src/components/checkbox";
 
 
 export default function About() {
@@ -25,6 +27,7 @@ export default function About() {
   const {isOpen, onOpen, onOpenChange} = useDisclosure();
   const {isOpen: isNewFolderOpen, onOpen: onNewFolderOpen, onOpenChange: onNewFolderOpenChange} = useDisclosure();
   const {isOpen: isSharingOpen, onOpen: onSharingOpen, onOpenChange: onSharingOpenChange} = useDisclosure();
+  const {isOpen: isAiAssistOpen, onOpen: onAiAssistOpen, onOpenChange: onAiAssistOpenChange} = useDisclosure();
   const [sharedName, setSharedName] = useState<string>('');
   const [name, setName] = useState<string>('Новая стратегия');
   const [area, setArea] = useState<string | number>('full');
@@ -32,6 +35,7 @@ export default function About() {
   const [sportType, setSportType] = useState<number | string>('basketball');
   const [folderName, setFolderName] = useState<string>('Новая папка');
   const [sharedFolder, setSharedFolder] = useState<number>(0);
+  const [aiPromt, setAiPromt] = useState<string>("Атакующая стратегия чтобы победить всех")
 
   const router = useRouter()
 
@@ -59,6 +63,13 @@ export default function About() {
 
   function share() {
     shareFolder(sharedName, sharedFolder, router);
+  }
+
+  async function onAiCreate(){
+    if (name.length > 2 || aiPromt.length > 15) {
+      const strategy = await createDrawing(name, type, "full", router);
+      // ??
+    }
   }
 
   async function saveFolder() {
@@ -136,6 +147,7 @@ export default function About() {
                   <Line color={'grey'}></Line>
                 </ModalHeader>
                 <ModalBody>
+                  <CheckboxInput label={"Создать с помошью ИИ"} color="grey" value={false} onChange={()=> {onClose(); onAiAssistOpen();}}/>
                   <LineInput label="Название" color="grey" onChange={setName} value={name}/>
                   <LineSelect label="Папка" color="grey" options={folders.map((folder)=> {return {name: folder.name, id: folder.id}})} onChange={setType} value={type}/>
                   <LineSelect label="Зал" color="grey" options={[{id: 'full', name:'Полный'}, {id: 'half', name:'Половина'}]} onChange={setArea} value={area}/>
@@ -175,7 +187,7 @@ export default function About() {
         </Modal>
 
         <Modal isOpen={isSharingOpen} onOpenChange={onSharingOpenChange}>
-            <ModalContent>
+          <ModalContent>
                 {(onClose) => (
                 <>
                     <ModalHeader className="flex flex-col gap-1 text-black">
@@ -191,8 +203,31 @@ export default function About() {
                     </ModalFooter>
                 </>
                 )}
-            </ModalContent>
-            </Modal>
+          </ModalContent>
+        </Modal>
+
+        <Modal isOpen={isAiAssistOpen} onOpenChange={onAiAssistOpenChange}>
+          <ModalContent>
+            {(onClose) => (
+              <>
+                <ModalHeader className="flex flex-col gap-1 text-black">
+                  Создание стратегии
+                  <Line color={'grey'}></Line>
+                </ModalHeader>
+                <ModalBody>
+                <CheckboxInput label={"Создать с помошью ИИ"} color="grey" value={true} onChange={()=> {onClose(); onOpen();}}/>
+                  <LineInput label="Название" color="grey" onChange={setName} value={name}/>
+                  <LineSelect label="Папка" color="grey" options={folders.map((folder)=> {return {name: folder.name, id: folder.id}})} onChange={setType} value={type}/>
+                  <AreaInput label="Описание требуемой стратегии" color="grey" onChange={setAiPromt} value={aiPromt} />
+                </ModalBody>
+                <ModalFooter className="flex justify-end">
+                  <Button label="Отмена" color="grey" clickHandler={onClose}/>
+                  <Button label="Cоздать" color="orange" clickHandler={()=>{onAiCreate()}} disabled={!(name.length > 2 && aiPromt.length > 15)}/>
+                </ModalFooter>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
       </div>
   )
   }
